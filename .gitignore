@@ -1,0 +1,6 @@
+/.vscode
+/bin
+/build
+/vex
+makefile
+compile_commands.json
