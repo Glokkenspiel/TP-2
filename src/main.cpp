@@ -90,7 +90,6 @@ void usercontrol(void) {
   Controller1.Screen.setCursor(1, 1);
   Controller1.Screen.print("Arcade");
   while (1) {
-    //hi
     // This is the main execution loop for the user control program.
     // Each time through the loop your program should update motor + servo
     // values based on feedback from the joysticks.
