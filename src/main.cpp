@@ -90,6 +90,7 @@ void usercontrol(void) {
   Controller1.Screen.setCursor(1, 1);
   Controller1.Screen.print("Arcade");
   while (1) {
+    //hi
     // This is the main execution loop for the user control program.
     // Each time through the loop your program should update motor + servo
     // values based on feedback from the joysticks.
@@ -101,15 +102,13 @@ void usercontrol(void) {
 
     if(Controller1.ButtonLeft.pressing()){
       if(buttonLeftPressing == 0){
+        Controller1.Screen.clearLine(1);
+        Controller1.Screen.setCursor(1, 1);
         if(driveMode == 0){
           driveMode = 1;
-          Controller1.Screen.clearLine(1);
-          Controller1.Screen.setCursor(1, 1);
           Controller1.Screen.print("Tank");
         }else{
           driveMode = 0;
-          Controller1.Screen.clearLine(1);
-          Controller1.Screen.setCursor(1, 1);
           Controller1.Screen.print("Arcade");
         }
       }
