@@ -13,7 +13,7 @@
 // Controller1          controller                    
 // lift                 motor_group   5, 6            
 // lB                   motor_group   1, 2            
-// rB                   motor_group   3, 4            
+// rB                   motor_group   3, 8            
 // plungerRot           motor         7               
 // pF                   digital_out   A               
 // pB                   digital_out   B               
