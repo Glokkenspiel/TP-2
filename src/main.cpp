@@ -45,7 +45,8 @@ void pre_auton(void) {
 }
 
 void autonomous(void) {
-  plungerRot.spinFor(fwd, 1, sec);
+  plungerRot.spin(fwd, 33, rpm);
+  wait(1, sec);
   plungerRot.stop();
   pB.set(1);
 }
@@ -102,9 +103,9 @@ void usercontrol(void) {
 
     /*---Used to rotate the 'Plunger' unit---*/
     if(Controller1.ButtonR1.pressing()){
-      plungerRot.spin(fwd, 100, rpm);
+      plungerRot.spin(fwd, 25, rpm);
     }else if(Controller1.ButtonR2.pressing()){
-      plungerRot.spin(reverse, 100, rpm);
+      plungerRot.spin(reverse, 25, rpm);
     }else{
       plungerRot.stop();
     }
