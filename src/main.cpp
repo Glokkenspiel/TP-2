@@ -38,6 +38,33 @@ bool pneumaticFront = 0;
 
 bool pneumaticBack = 0;
 
+/*---Runs all the basic functions of the base with one command excluding run time---*/
+void aBase(bool isTurning, directionType dir, int num, velocityUnits unit){
+  lB.spin(dir, num, unit);
+  if(isTurning == 1){
+    rB.spin(dir, -num, unit);
+  }else{
+    rB.spin(dir, num, unit);
+  }
+}
+
+/*---Stops the base with one command---*/
+void aBaseStop(){
+  lB.stop();
+  rB.stop();
+}
+
+/*---Activates the tower lift with one command---*/
+void aPF(){
+  if(pneumaticFront == 0){
+    pF.set(1);
+    pneumaticFront = 1;
+  }else{
+    pF.set(0);
+    pneumaticFront = 0;
+  }
+}
+
 void pre_auton(void) {
   vexcodeInit();
   lift.setStopping(brake);
@@ -45,10 +72,26 @@ void pre_auton(void) {
 }
 
 void autonomous(void) {
-  plungerRot.spin(fwd, 33, rpm);
+  plungerRot.spin(fwd, 100, rpm); // -
+                                  //  |
+  wait(1, sec);                   //  |
+                                  //  |- Sets up our bar to lower the platforms
+  plungerRot.stop();              //  |
+  pB.set(1);                      // -
+  aBase(0, fwd, 100, rpm);
+
+  wait(5, sec);
+
+  aBaseStop();
+  aPF();
+
   wait(1, sec);
-  plungerRot.stop();
-  pB.set(1);
+
+  aBase(0, reverse, 100, rpm);
+
+  wait(5, sec);
+
+  aBaseStop();
 }
 
 void usercontrol(void) {
