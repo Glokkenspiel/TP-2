@@ -14,7 +14,7 @@
 // lift                 motor_group   5, 6            
 // lB                   motor_group   1, 2            
 // rB                   motor_group   3, 8            
-// plungerRot           motor         7               
+// plungerRot           motor         11              
 // pF                   digital_out   A               
 // pB                   digital_out   B               
 // pP                   digital_out   C               
@@ -45,7 +45,9 @@ void pre_auton(void) {
 }
 
 void autonomous(void) {
-
+  plungerRot.spinFor(fwd, 1, sec);
+  plungerRot.stop();
+  pB.set(1);
 }
 
 void usercontrol(void) {
