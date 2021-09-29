@@ -249,35 +249,34 @@ void usercontrol(void) {
           negY = 0;
         }
       }
-    }
+      if(negX == 1){
+        circleX -= 4.5;
+      }else{
+        circleX += 4.5;
+      }
 
-    if(negX == 1){
-      circleX -= 4.5;
-    }else{
-      circleX += 4.5;
-    }
+      if(negY == 1){
+        circleY -= 3.5;
+      }else{
+        circleY += 3.5;
+      }
 
-    if(negY == 1){
-      circleY -= 3.5;
-    }else{
-      circleY += 3.5;
+      if(cColor == 0){
+        Brain.Screen.setPenColor(purple);
+        Brain.Screen.setFillColor(purple);
+      }else if(cColor == 1){
+        Brain.Screen.setPenColor(green);
+        Brain.Screen.setFillColor(green);
+      }else if(cColor == 2){
+        Brain.Screen.setPenColor(orange);
+        Brain.Screen.setFillColor(orange);
+      }else if(cColor == 3){
+        Brain.Screen.setPenColor(yellow);
+        Brain.Screen.setFillColor(yellow);
+      }
+      Brain.Screen.drawCircle(circleX, circleY, 20);
+      matchCounter = 0;
     }
-
-    if(cColor == 0){
-      Brain.Screen.setPenColor(purple);
-      Brain.Screen.setFillColor(purple);
-    }else if(cColor == 1){
-      Brain.Screen.setPenColor(green);
-      Brain.Screen.setFillColor(green);
-    }else if(cColor == 2){
-      Brain.Screen.setPenColor(orange);
-      Brain.Screen.setFillColor(orange);
-    }else if(cColor == 3){
-      Brain.Screen.setPenColor(yellow);
-      Brain.Screen.setFillColor(yellow);
-    }
-    Brain.Screen.drawCircle(circleX, circleY, 20);
-    matchCounter = 0;
   //}
 }
 
