@@ -47,9 +47,9 @@ int circleX = 240;
 
 int circleY = 120;
 
-int cSX = rand() % 420 + 30;
+int cSX = (rand() % 450) + 15;
 
-int cSY = rand() % 180 + 30;
+int cSY = (rand() % 210) + 15;
 
 int matchCounter = 0;
 
@@ -225,8 +225,8 @@ void usercontrol(void) {
     wait(20, msec);
 
     /*---Actual 'Pong' section of the 'Pong' code---*/
-    matchCounter += 1;
-    if(matchCounter >= 2){
+    /*matchCounter += 1;
+    if(matchCounter >= 2){*/
       Brain.Screen.setFillColor(black);
       Brain.Screen.setPenColor(black);
       Brain.Screen.drawCircle(circleX, circleY, 20);
@@ -249,36 +249,36 @@ void usercontrol(void) {
           negY = 0;
         }
       }
-
-      if(negX == 1){
-        circleX -= 4.5;
-      }else{
-        circleX += 4.5;
-      }
-      
-      if(negY == 1){
-        circleY -= 3.5;
-      }else{
-        circleY += 3.5;
-      }
-
-      if(cColor == 0){
-        Brain.Screen.setPenColor(purple);
-        Brain.Screen.setFillColor(purple);
-      }else if(cColor == 1){
-        Brain.Screen.setPenColor(green);
-        Brain.Screen.setFillColor(green);
-      }else if(cColor == 2){
-        Brain.Screen.setPenColor(orange);
-        Brain.Screen.setFillColor(orange);
-      }else if(cColor == 3){
-        Brain.Screen.setPenColor(yellow);
-        Brain.Screen.setFillColor(yellow);
-      }
-      Brain.Screen.drawCircle(circleX, circleY, 20);
-      matchCounter = 0;
     }
-  }
+
+    if(negX == 1){
+      circleX -= 4.5;
+    }else{
+      circleX += 4.5;
+    }
+
+    if(negY == 1){
+      circleY -= 3.5;
+    }else{
+      circleY += 3.5;
+    }
+
+    if(cColor == 0){
+      Brain.Screen.setPenColor(purple);
+      Brain.Screen.setFillColor(purple);
+    }else if(cColor == 1){
+      Brain.Screen.setPenColor(green);
+      Brain.Screen.setFillColor(green);
+    }else if(cColor == 2){
+      Brain.Screen.setPenColor(orange);
+      Brain.Screen.setFillColor(orange);
+    }else if(cColor == 3){
+      Brain.Screen.setPenColor(yellow);
+      Brain.Screen.setFillColor(yellow);
+    }
+    Brain.Screen.drawCircle(circleX, circleY, 20);
+    matchCounter = 0;
+  //}
 }
 
 int main() {
@@ -288,6 +288,6 @@ int main() {
   pre_auton();
 
   while (true) {
-    wait(100, msec);
+    wait(20, msec);
   }
 }
