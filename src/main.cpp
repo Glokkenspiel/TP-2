@@ -20,6 +20,9 @@
 // pP                   digital_out   C               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
+/*Notes from programmer Zak, I make reference to something known as 'Pong' code,
+  this is purely for aesthetics and can be removed without consequenses*/
+
 #include "vex.h"
 
 using namespace vex;
@@ -27,7 +30,7 @@ using namespace vex;
 competition Competition;
 
 
-
+/*---Sets up booleans and variables for the match---*/
 bool driveMode = 0; 
 
 bool buttonLeftPressing = 0;
@@ -37,6 +40,24 @@ bool buttonDownPressing = 0;
 bool pneumaticFront = 0;
 
 bool pneumaticBack = 0;
+
+
+/*---'Pong' code setup---*/
+int circleX = 240;
+
+int circleY = 120;
+
+int cSX = rand() % 420 + 30;
+
+int cSY = rand() % 180 + 30;
+
+int matchCounter = 0;
+
+int cColor = 0;
+
+bool negX = 0;
+
+bool negY = 0;
 
 /*---Runs all the basic functions of the base with one command excluding run time---*/
 void aBase(bool isTurning, directionType dir, int num, velocityUnits unit){
@@ -97,6 +118,20 @@ void autonomous(void) {
 }
 
 void usercontrol(void) {
+  /*---Setting up the 'Pong' code---*/
+  Brain.Screen.setPenColor(cyan);
+  Brain.Screen.setFillColor(cyan);
+  Brain.Screen.drawRectangle(1, 1, 479, 239);
+  Brain.Screen.setPenColor(black);
+  Brain.Screen.setFillColor(black);
+  Brain.Screen.drawRectangle(10, 10, 461, 221);
+  Brain.Screen.setPenColor(purple);
+  Brain.Screen.setFillColor(purple);
+  circleX = cSX;
+  circleY = cSY;
+  Brain.Screen.drawCircle(circleX, circleY, 20);
+
+  /*---Sets up driver information---*/
   Controller1.Screen.clearScreen();
   Controller1.Screen.setCursor(1, 1);
   Controller1.Screen.print("Arcade");
@@ -188,6 +223,61 @@ void usercontrol(void) {
     Controller1.Screen.print(Brain.Battery.capacity());
 
     wait(20, msec);
+
+    /*---Actual 'Pong' section of the 'Pong' code---*/
+    matchCounter += 1;
+    if(matchCounter >= 2){
+      Brain.Screen.setFillColor(black);
+      Brain.Screen.setPenColor(black);
+      Brain.Screen.drawCircle(circleX, circleY, 20);
+      if(circleX >= 450 || circleX <= 30){
+        cColor = rand() % 4;
+        Brain.Screen.setPenColor(cyan);
+        Brain.Screen.setFillColor(cyan);
+        Brain.Screen.drawRectangle(1, 1, 479, 10);
+        Brain.Screen.drawRectangle(1, 10, 10, 220);
+        Brain.Screen.drawRectangle(470, 10, 10, 220);
+        Brain.Screen.drawRectangle(1, 230, 479, 10);
+        if(circleX >= 450){
+          negX = 1;
+          circleX -= 4.5;
+        }else{
+          negX = 0;
+          circleX += 4.5;
+        }
+      }
+      if(circleY >= 210 || circleY <= 30){
+        cColor = rand() % 4;
+        Brain.Screen.setPenColor(cyan);
+        Brain.Screen.setFillColor(cyan);
+        Brain.Screen.drawRectangle(1, 1, 479, 10);
+        Brain.Screen.drawRectangle(1, 10, 10, 220);
+        Brain.Screen.drawRectangle(470, 10, 10, 220);
+        Brain.Screen.drawRectangle(1, 230, 479, 10);
+        if(circleY >= 210){
+          negY = 1;
+          circleY -= 3.5;
+        }else{
+          negY = 0;
+          circleY += 3.5;
+        }
+      }
+      if(cColor == 0){
+        Brain.Screen.setPenColor(purple);
+        Brain.Screen.setFillColor(purple);
+      }else if(cColor == 1){
+        Brain.Screen.setPenColor(green);
+        Brain.Screen.setFillColor(green);
+      }else if(cColor == 2){
+        Brain.Screen.setPenColor(orange);
+        Brain.Screen.setFillColor(orange);
+      }else if(cColor == 3){
+        Brain.Screen.setPenColor(yellow);
+        Brain.Screen.setFillColor(yellow);
+      }
+      Brain.Screen.drawCircle(circleX, circleY, 20);
+      matchCounter = 0;
+    }
   }
 }
 
