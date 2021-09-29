@@ -230,7 +230,7 @@ void usercontrol(void) {
       Brain.Screen.setFillColor(black);
       Brain.Screen.setPenColor(black);
       Brain.Screen.drawCircle(circleX, circleY, 20);
-      if(circleX >= 450 || circleX <= 30){
+      if(circleX >= 450 || circleX <= 30 || circleY >= 210 || circleY <= 30){
         cColor = rand() % 4;
         Brain.Screen.setPenColor(cyan);
         Brain.Screen.setFillColor(cyan);
@@ -240,28 +240,28 @@ void usercontrol(void) {
         Brain.Screen.drawRectangle(1, 230, 479, 10);
         if(circleX >= 450){
           negX = 1;
-          circleX -= 4.5;
         }else{
           negX = 0;
-          circleX += 4.5;
         }
-      }
-      if(circleY >= 210 || circleY <= 30){
-        cColor = rand() % 4;
-        Brain.Screen.setPenColor(cyan);
-        Brain.Screen.setFillColor(cyan);
-        Brain.Screen.drawRectangle(1, 1, 479, 10);
-        Brain.Screen.drawRectangle(1, 10, 10, 220);
-        Brain.Screen.drawRectangle(470, 10, 10, 220);
-        Brain.Screen.drawRectangle(1, 230, 479, 10);
         if(circleY >= 210){
           negY = 1;
-          circleY -= 3.5;
         }else{
           negY = 0;
-          circleY += 3.5;
         }
       }
+
+      if(negX == 1){
+        circleX -= 4.5;
+      }else{
+        circleX += 4.5;
+      }
+      
+      if(negY == 1){
+        circleY -= 3.5;
+      }else{
+        circleY += 3.5;
+      }
+
       if(cColor == 0){
         Brain.Screen.setPenColor(purple);
         Brain.Screen.setFillColor(purple);
