@@ -72,26 +72,28 @@ void pre_auton(void) {
 }
 
 void autonomous(void) {
-  plungerRot.spin(fwd, 100, rpm); // -
-                                  //  |
-  wait(1, sec);                   //  |
-                                  //  |- Sets up our bar to lower the platforms
-  plungerRot.stop();              //  |
-  pB.set(1);                      // -
-  aBase(0, fwd, 100, rpm);
+  /*aBase(0, fwd, 100, rpm); //Drive forward
 
-  wait(5, sec);
+  wait(3, sec); //~2 tiles at 100 rpm
 
   aBaseStop();
-  aPF();
+  aPF(); //Lower goal lift
 
-  wait(1, sec);
+  wait(.1, sec);
+
+  aBase(0, fwd, 25, rpm); //Slowly drive forward to hopfully hook the tower
+
+  wait(.25, sec);
+
+  aPF(); //Raise goal lift
+
+  wait(.1, sec);
 
   aBase(0, reverse, 100, rpm);
 
-  wait(5, sec);
+  wait(3.1, sec); //~2+ a little tiles
 
-  aBaseStop();
+  aBaseStop();*/
 }
 
 void usercontrol(void) {
@@ -124,13 +126,13 @@ void usercontrol(void) {
     if(driveMode == 0){
 
       /*---'Arcade'---*/
-      lB.spin(fwd, Controller1.Axis3.position(percent) + Controller1.Axis1.position(percent), rpm);
-      rB.spin(fwd, Controller1.Axis3.position(percent) - Controller1.Axis1.position(percent), rpm);
+      lB.spin(fwd, 2*Controller1.Axis3.position(percent) + 2*Controller1.Axis1.position(percent), rpm);
+      rB.spin(fwd, 2*Controller1.Axis3.position(percent) - 2*Controller1.Axis1.position(percent), rpm);
     }else{
 
       /*---'Tank'---*/
-      lB.spin(fwd, Controller1.Axis3.position(percent), rpm);
-      rB.spin(fwd, Controller1.Axis2.position(percent), rpm);
+      lB.spin(fwd, 2*Controller1.Axis3.position(percent), rpm);
+      rB.spin(fwd, 2*Controller1.Axis2.position(percent), rpm);
     }
 
 
@@ -146,9 +148,9 @@ void usercontrol(void) {
 
     /*---Used to rotate the 'Plunger' unit---*/
     if(Controller1.ButtonR1.pressing()){
-      plungerRot.spin(fwd, 25, rpm);
+      plungerRot.spin(fwd, 100, rpm);
     }else if(Controller1.ButtonR2.pressing()){
-      plungerRot.spin(reverse, 25, rpm);
+      plungerRot.spin(reverse, 100, rpm);
     }else{
       plungerRot.stop();
     }
