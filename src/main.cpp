@@ -43,7 +43,7 @@ bool pneumaticBack = 0;
 
 
 /*---'Pong' code setup---*/
-int circleX = 240;
+/*int circleX = 240;
 
 int circleY = 120;
 
@@ -57,7 +57,7 @@ int cColor = 0;
 
 bool negX = 0;
 
-bool negY = 0;
+bool negY = 0;*/
 
 /*---Runs all the basic functions of the base with one command excluding run time---*/
 void aBase(bool isTurning, directionType dir, int num, velocityUnits unit){
@@ -119,17 +119,17 @@ void autonomous(void) {
 
 void usercontrol(void) {
   /*---Setting up the 'Pong' code---*/
-  Brain.Screen.setPenColor(cyan);
+  /*Brain.Screen.setPenColor(cyan);
   Brain.Screen.setFillColor(cyan);
   Brain.Screen.drawRectangle(1, 1, 479, 239);
-  Brain.Screen.setPenColor(black);
+  Brain.Screen.setPenColor(vex::black);
   Brain.Screen.setFillColor(black);
   Brain.Screen.drawRectangle(10, 10, 461, 221);
   Brain.Screen.setPenColor(purple);
   Brain.Screen.setFillColor(purple);
   circleX = cSX;
   circleY = cSY;
-  Brain.Screen.drawCircle(circleX, circleY, 20);
+  Brain.Screen.drawCircle(circleX, circleY, 20);*/
 
   /*---Sets up driver information---*/
   Controller1.Screen.clearScreen();
@@ -226,7 +226,7 @@ void usercontrol(void) {
 
     /*---Actual 'Pong' section of the 'Pong' code---*/
     /*matchCounter += 1;
-    if(matchCounter >= 2){*/
+    if(matchCounter >= 2){
       Brain.Screen.setFillColor(black);
       Brain.Screen.setPenColor(black);
       Brain.Screen.drawCircle(circleX, circleY, 20);
@@ -249,6 +249,7 @@ void usercontrol(void) {
           negY = 0;
         }
       }
+
       if(negX == 1){
         circleX -= 4.5;
       }else{
@@ -276,8 +277,8 @@ void usercontrol(void) {
       }
       Brain.Screen.drawCircle(circleX, circleY, 20);
       matchCounter = 0;
-    }
-  //}
+    }*/
+  }
 }
 
 int main() {
@@ -287,6 +288,6 @@ int main() {
   pre_auton();
 
   while (true) {
-    wait(20, msec);
+    wait(100, msec);
   }
 }
