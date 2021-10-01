@@ -78,10 +78,10 @@ void aBaseStop(){
 /*---Activates the tower lift with one command---*/
 void aPF(){
   if(pneumaticFront == 0){
-    pF.set(1);
+    pF.set(0);
     pneumaticFront = 1;
   }else{
-    pF.set(0);
+    pF.set(1);
     pneumaticFront = 0;
   }
 }
@@ -93,12 +93,12 @@ void pre_auton(void) {
 }
 
 void autonomous(void) {
-  /*aBase(0, fwd, 100, rpm); //Drive forward
+  aBase(0, fwd, 100, rpm); //Drive forward
+  aPF(); //Lower goal lift
 
   wait(3, sec); //~2 tiles at 100 rpm
 
   aBaseStop();
-  aPF(); //Lower goal lift
 
   wait(.1, sec);
 
@@ -114,7 +114,7 @@ void autonomous(void) {
 
   wait(3.1, sec); //~2+ a little tiles
 
-  aBaseStop();*/
+  aBaseStop();
 }
 
 void usercontrol(void) {
