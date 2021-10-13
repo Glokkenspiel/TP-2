@@ -60,12 +60,29 @@ bool negX = 0;
 bool negY = 0;*/
 
 /*---Runs all the basic functions of the base with one command excluding run time---*/
-void aBase(bool isTurning, directionType dir, int num, velocityUnits unit){
-  lB.spin(dir, num, unit);
+void aBase(bool isTurning, directionType dir, int num, bool isArc, bool rl, float offset){
+  /*---isTurning dictates whether the robot turns or not---*/
   if(isTurning == 1){
-    rB.spin(dir, -num, unit);
+    if(rl == 1){
+      lB.spin(dir, -num, rpm);
+      rB.spin(dir, num, rpm);
+    }else{
+      lB.spin(dir, num, rpm);
+      rB.spin(dir, -num, rpm);
+    }
+  /*---isArc dictates whether the robot goes in an arcing motion---*/
+  }else if(isArc == 1){
+    if(rl == 1){
+      lB.spin(dir, num, rpm);
+      /*---offset is how much it arcs by---*/
+      rB.spin(dir, num - (offset / num) * 100, rpm);
+    }else{
+      lB.spin(dir, num - (offset / num) * 100, rpm);
+      rB.spin(dir, num, rpm);
+    }
   }else{
-    rB.spin(dir, num, unit);
+    lB.spin(dir, num, rpm);
+    rB.spin(dir, num, rpm);
   }
 }
 
@@ -78,10 +95,10 @@ void aBaseStop(){
 /*---Activates the tower lift with one command---*/
 void aPF(){
   if(pneumaticFront == 0){
-    pF.set(0);
+    pF.set(1);
     pneumaticFront = 1;
   }else{
-    pF.set(1);
+    pF.set(0);
     pneumaticFront = 0;
   }
 }
@@ -93,26 +110,59 @@ void pre_auton(void) {
 }
 
 void autonomous(void) {
-  aBase(0, fwd, 100, rpm); //Drive forward
-  aPF(); //Lower goal lift
+  aBase(0, fwd, 100, 0, 0, 0); //Starts on the right side, and drives forward
+                               //up to the middle tower
+  wait(3.65, sec);
 
-  wait(3, sec); //~2 tiles at 100 rpm
+  aPF(); //Raises the small tower lift on the front
+  aBaseStop(); //Stops for a moment to let the tower stop rocking
 
-  aBaseStop();
+  wait(.5, sec);
+
+  aBase(0, reverse, 150, 0, 0, 0); //Back up into our home zone
+
+  wait(1.4, sec);
+
+  aPF(); //Drop off the middle tower at the edge of our home zone
+
+  wait(.75, sec);
+
+  aBase(1, fwd, 100, 0, 0, 0); //Turn towards the right neutral tower
+
+  wait(.3, sec);
+
+  aBase(0, fwd, 100, 0, 0, 0); //Drive forward to the right neutral tower
+
+  wait(2.25, sec); 
+
+  aPF(); //Raises the small tower lift on the front
+  aBaseStop(); //Lets the small tower lift raise up
 
   wait(.1, sec);
+  aBase(0, reverse, 100, 0, 0, 0); //Back up into our home zone
 
-  aBase(0, fwd, 25, rpm); //Slowly drive forward to hopfully hook the tower
+  wait(1.5, sec);
 
-  wait(.25, sec);
+  aPF(); //Drop off the tower at the edge of our home zone
 
-  aPF(); //Raise goal lift
+  wait(1.1, sec);
 
-  wait(.1, sec);
+  aBase(1, fwd, 100, 0, 0, 0); //Turn towards the alliance tower on the AWP line
 
-  aBase(0, reverse, 100, rpm);
+  wait(.3875, sec);
 
-  wait(3.1, sec); //~2+ a little tiles
+  aBase(0, fwd, 100, 0, 0, 0); //Drive towards the alliance tower on the AWP line
+
+  wait(1, sec);
+
+  aPF(); //Pick up the tower
+  aBase(0, reverse, 100, 0, 0, 0); //Back away with the tower
+
+  wait(.8, sec);
+
+  aPF(); //Drop it off right before time ends
+
+  wait(.4, sec);
 
   aBaseStop();
 }
@@ -135,6 +185,7 @@ void usercontrol(void) {
   Controller1.Screen.clearScreen();
   Controller1.Screen.setCursor(1, 1);
   Controller1.Screen.print("Arcade");
+
   while (1) {
 
 
@@ -214,7 +265,6 @@ void usercontrol(void) {
     }else{
       pP.set(0);
     }
-
 
     /*---Puts the battery percent onto the controller---*/
     Controller1.Screen.setCursor(2, 1);
