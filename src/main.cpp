@@ -13,8 +13,8 @@
 // Controller1          controller                    
 // lift                 motor_group   5, 6            
 // lB                   motor_group   1, 2            
-// rB                   motor_group   3, 8            
-// plungerRot           motor         11              
+// rB                   motor_group   3, 4            
+// plungerRot           motor         7               
 // pF                   digital_out   A               
 // pB                   digital_out   B               
 // pP                   digital_out   C               
@@ -36,6 +36,8 @@ bool driveMode = 0;
 bool buttonLeftPressing = 0;
 
 bool buttonDownPressing = 0;
+
+bool buttonAPressing = 0;
 
 bool pneumaticFront = 0;
 
@@ -107,12 +109,15 @@ void pre_auton(void) {
   vexcodeInit();
   lift.setStopping(brake);
   plungerRot.setStopping(brake);
+  aPF();
+  plungerRot.setStopping(hold);
 }
 
 void autonomous(void) {
+  aPF(); //Lowers the small tower lift
   aBase(0, fwd, 100, 0, 0, 0); //Starts on the right side, and drives forward
                                //up to the middle tower
-  wait(3.65, sec);
+  wait(3.75, sec);
 
   aPF(); //Raises the small tower lift on the front
   aBaseStop(); //Stops for a moment to let the tower stop rocking
@@ -224,19 +229,19 @@ void usercontrol(void) {
 
     /*---Used to rotate the main lift unit---*/
     if(Controller1.ButtonL1.pressing()){
-      lift.spin(fwd, 100, rpm);
+      lift.spin(reverse, 150, rpm);
     }else if(Controller1.ButtonL2.pressing()){
-      lift.spin(reverse, 100, rpm);
+      lift.spin(fwd, 150, rpm);
     }else{
       lift.stop();
     }
 
 
     /*---Used to rotate the 'Plunger' unit---*/
-    if(Controller1.ButtonR1.pressing()){
-      plungerRot.spin(fwd, 100, rpm);
-    }else if(Controller1.ButtonR2.pressing()){
-      plungerRot.spin(reverse, 100, rpm);
+    if(Controller1.ButtonR2.pressing()){
+      plungerRot.spin(fwd, 50, rpm);
+    }else if(Controller1.ButtonR1.pressing()){
+      plungerRot.spin(reverse, 50, rpm);
     }else{
       plungerRot.stop();
     }
@@ -256,6 +261,23 @@ void usercontrol(void) {
       buttonDownPressing = 1;
     }else{
       buttonDownPressing = 0;
+    }
+
+
+    /*---When pushed, will cause the back tower lift to raise or lower---*/
+    if(Controller1.ButtonA.pressing()){
+      if(buttonAPressing == 0){
+        if(pneumaticBack == 0){
+          pB.set(1);
+          pneumaticBack = 1;
+        }else{
+          pB.set(0);
+          pneumaticBack = 0;
+        }
+      }
+      buttonAPressing = 1;
+    }else{
+      buttonAPressing = 0;
     }
 
 
