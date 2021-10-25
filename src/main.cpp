@@ -11,7 +11,7 @@
 // Robot Configuration:
 // [Name]               [Type]        [Port(s)]
 // Controller1          controller                    
-// lift                 motor_group   5, 6            
+// lift                 motor_group   5, 9            
 // lB                   motor_group   1, 2            
 // rB                   motor_group   3, 4            
 // plungerRot           motor         7               
