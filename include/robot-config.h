@@ -7,7 +7,7 @@ extern controller Controller1;
 extern motor_group lift;
 extern motor_group lB;
 extern motor_group rB;
-extern motor plungerRot;
+extern motor mTLift;
 extern digital_out pF;
 extern digital_out pB;
 extern digital_out pP;

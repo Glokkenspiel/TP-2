@@ -14,7 +14,7 @@
 // lift                 motor_group   5, 9            
 // lB                   motor_group   1, 2            
 // rB                   motor_group   3, 4            
-// plungerRot           motor         7               
+// mTLift               motor         7               
 // pF                   digital_out   A               
 // pB                   digital_out   B               
 // pP                   digital_out   C               
@@ -43,6 +43,13 @@ bool pneumaticFront = 0;
 
 bool pneumaticBack = 0;
 
+bool direct = 0;
+
+int x = 0; //Universal variable
+
+float liPos = 0;
+
+float mTPos = 0;
 
 /*---'Pong' code setup---*/
 /*int circleX = 240;
@@ -105,71 +112,72 @@ void aPF(){
   }
 }
 
-void pre_auton(void) {
-  vexcodeInit();
-  lift.setStopping(brake);
-  plungerRot.setStopping(brake);
-  aPF();
-  plungerRot.setStopping(hold);
-}
 
-void autonomous(void) {
-  aPF(); //Lowers the small tower lift
-  aBase(0, fwd, 100, 0, 0, 0); //Starts on the right side, and drives forward
-                               //up to the middle tower
-  wait(3.75, sec);
-
-  aPF(); //Raises the small tower lift on the front
-  aBaseStop(); //Stops for a moment to let the tower stop rocking
+/*---Activate the Main Tower Lift---*/
+void aML(){
+  if(direct == 0){
+    mTLift.spin(fwd, 100, rpm);
+    direct = 1;
+  }else{
+    mTLift.spin(reverse, 100, rpm);
+    direct = 0;
+  }
 
   wait(.5, sec);
 
-  aBase(0, reverse, 150, 0, 0, 0); //Back up into our home zone
+  mTLift.stop();
+}
 
-  wait(1.4, sec);
+void pre_auton(void) {
+  vexcodeInit();
+  lift.setStopping(brake);
+  mTLift.setStopping(brake);
+  aPF();
+  mTLift.setStopping(hold);
+}
 
-  aPF(); //Drop off the middle tower at the edge of our home zone
+void autonomous(void) {
+  aBase(0, fwd, 100, 0, 0, 0); //Drive towards the alliance tower on the AWP line
 
   wait(.75, sec);
 
-  aBase(1, fwd, 100, 0, 0, 0); //Turn towards the right neutral tower
+  aBaseStop();
+  aML(); //Grab the tower
 
-  wait(.3, sec);
+  aBase(0, fwd, 10, 0, 0, 0); //Slowly pull forward
+  while(x < 2){ //Fix the Main Tower Lift
+    aML(); 
+    x += 1;
+  }
 
-  aBase(0, fwd, 100, 0, 0, 0); //Drive forward to the right neutral tower
-
-  wait(2.25, sec); 
-
-  aPF(); //Raises the small tower lift on the front
-  aBaseStop(); //Lets the small tower lift raise up
-
-  wait(.1, sec);
-  aBase(0, reverse, 100, 0, 0, 0); //Back up into our home zone
-
-  wait(1.5, sec);
-
-  aPF(); //Drop off the tower at the edge of our home zone
-
-  wait(1.1, sec);
-
-  aBase(1, fwd, 100, 0, 0, 0); //Turn towards the alliance tower on the AWP line
-
-  wait(.3875, sec);
-
-  aBase(0, fwd, 100, 0, 0, 0); //Drive towards the alliance tower on the AWP line
+  aBase(0, reverse, 50, 0, 0, 0); //Back off of the AWP line
 
   wait(1, sec);
 
-  aPF(); //Pick up the tower
-  aBase(0, reverse, 100, 0, 0, 0); //Back away with the tower
+  aBaseStop(); //Stop
+  aML(); //Drop the Tower
 
-  wait(.8, sec);
+  aBase(0,reverse, 50, 0, 0, 0); //Back up further
 
-  aPF(); //Drop it off right before time ends
+  wait(.5, sec);
 
-  wait(.4, sec);
+  aBase(1, fwd, 100, 0, 1, 0); //Turn towards the left neutral tower
+
+  wait(.175, sec);
+
+  aBase(0, fwd, 100, 0, 0, 0); //Drive towards the tower
+
+  wait(1.6, sec);
+
+  aBaseStop(); //Stop and grab the tower
+  aML();
+
+  aBase(0, reverse, 150, 0, 0, 0); //Reverse into the home zone
+
+  wait(.9, sec);
 
   aBaseStop();
+  aML();
 }
 
 void usercontrol(void) {
@@ -228,22 +236,22 @@ void usercontrol(void) {
 
 
     /*---Used to rotate the main lift unit---*/
-    if(Controller1.ButtonL1.pressing()){
+    if(Controller1.ButtonL1.pressing() && liPos > -1700){
       lift.spin(reverse, 150, rpm);
-    }else if(Controller1.ButtonL2.pressing()){
+    }else if(Controller1.ButtonL2.pressing() && liPos < 0){
       lift.spin(fwd, 150, rpm);
     }else{
       lift.stop();
     }
 
 
-    /*---Used to rotate the 'Plunger' unit---*/
-    if(Controller1.ButtonR2.pressing()){
-      plungerRot.spin(fwd, 50, rpm);
-    }else if(Controller1.ButtonR1.pressing()){
-      plungerRot.spin(reverse, 50, rpm);
+    /*---Used to rotate the Main Tower Lift---*/
+    if(Controller1.ButtonR2.pressing() && mTPos < 260){
+      mTLift.spin(fwd, 75, rpm);
+    }else if(Controller1.ButtonR1.pressing() && mTPos > 0){
+      mTLift.spin(reverse, 75, rpm);
     }else{
-      plungerRot.stop();
+      mTLift.stop();
     }
 
 
@@ -280,6 +288,8 @@ void usercontrol(void) {
       buttonAPressing = 0;
     }
 
+    liPos = lift.position(degrees);
+    mTPos = mTLift.position(degrees);
 
     /*---While pushed, the 'Plunger' will release---*/
     if(Controller1.ButtonB.pressing()){
@@ -293,6 +303,11 @@ void usercontrol(void) {
     Controller1.Screen.clearLine(2);
     Controller1.Screen.print("Battery Percent: ");
     Controller1.Screen.print(Brain.Battery.capacity());
+    /*Controller1.Screen.setCursor(3, 1);
+    Controller1.Screen.clearLine(3);
+    Controller1.Screen.print("mTLift Position: ");
+    Controller1.Screen.print(mTPos);
+    Controller1.Screen.print(" Degrees");*/
 
     wait(20, msec);
 
