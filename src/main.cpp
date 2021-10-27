@@ -31,7 +31,7 @@ competition Competition;
 
 
 /*---Sets up booleans and variables for the match---*/
-bool driveMode = 0; 
+bool driveMode = 1; 
 
 bool buttonLeftPressing = 0;
 
@@ -159,9 +159,9 @@ void autonomous(void) {
 
   aBase(0,reverse, 50, 0, 0, 0); //Back up further
 
-  wait(.5, sec);
+  wait(.35, sec);
 
-  aBase(1, fwd, 100, 0, 1, 0); //Turn towards the left neutral tower
+  aBase(1, fwd, 100, 0, 1, 0); //Turn towards the right neutral tower
 
   wait(.175, sec);
 
@@ -176,7 +176,29 @@ void autonomous(void) {
 
   wait(.9, sec);
 
-  aBaseStop();
+  aBase(1, fwd, 100, 0, 0, 0); //Turn so the tower is out of our way
+
+  wait(.5, sec);
+
+  aBaseStop(); //Drop off the tower
+  aML();
+
+  aBase(1, fwd, 50, 0, 1, 0); //Turn towards the middle neutral tower
+
+  wait(.7, sec);
+
+  aBase(0, fwd, 100, 0, 0, 0); //Drive towards the tower
+
+  wait(2, sec);
+
+  aBaseStop(); //Grab the tower
+  aML();
+
+  aBase(0, reverse, 100, 0, 0, 0); //Back into our home zone
+
+  wait(2, sec);
+
+  aBaseStop(); //Drop off the tower
   aML();
 }
 
