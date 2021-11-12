@@ -11,6 +11,7 @@ extern motor mTLift;
 extern digital_out pF;
 extern digital_out pB;
 extern digital_out pP;
+extern gps GPS;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
