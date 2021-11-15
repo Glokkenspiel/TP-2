@@ -21,9 +21,6 @@
 // GPS                  gps           10              
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
-/*Notes from programmer Zak, I make reference to something known as 'Pong' code,
-  this is purely for aesthetics and can be removed without consequenses*/
-
 #include "vex.h"
 
 using namespace vex;
@@ -51,90 +48,89 @@ int auton = 0;
 float liPos = 0;
 float mTPos = 0;
 
-/*---'Pong' code setup---*/
-/*int circleX = 240;
-
-int circleY = 120;
-
-int cSX = (rand() % 450) + 15;
-
-int cSY = (rand() % 210) + 15;
-
-int matchCounter = 0;
-
-int cColor = 0;
-
-bool negX = 0;
-
-bool negY = 0;*/
-
 /*---Auton Selector---*/
 void autonSelect(){
   Brain.Screen.clearScreen();
-  Brain.Screen.setFillColor(red);
-  Brain.Screen.setPenColor(red);
+  Brain.Screen.setFillColor(purple);
+  Brain.Screen.setPenColor(purple);
   Brain.Screen.drawRectangle(0, 0, 480, 120);
-  Brain.Screen.setFillColor(blue);
-  Brain.Screen.setPenColor(blue);
+  Brain.Screen.setFillColor(green);
+  Brain.Screen.setPenColor(green);
   Brain.Screen.drawRectangle(0, 121, 480, 120);
   Brain.Screen.setFillColor(white);
   Brain.Screen.setPenColor(white);
   Brain.Screen.drawRectangle(240, 0, 2, 240);
   Brain.Screen.drawRectangle(0, 120, 480, 2);
   Brain.Screen.setFont(propXL);
-  Brain.Screen.setFillColor(red);
+  Brain.Screen.setFillColor(purple);
   Brain.Screen.setCursor(2, 2);
-  Brain.Screen.print("R. Red");
+  Brain.Screen.print("R. Qual.");
   Brain.Screen.setCursor(2, 15);
-  Brain.Screen.print("L. Red");
-  Brain.Screen.setFillColor(blue);
+  Brain.Screen.print("L. Qual.");
+  Brain.Screen.setFillColor(green);
   Brain.Screen.setCursor(5, 2);
-  Brain.Screen.print("L. Blue");
+  Brain.Screen.print("R. Elim.");
   Brain.Screen.setCursor(5, 15);
-  Brain.Screen.print("R. Blue");
+  Brain.Screen.print("L. Elim");
+  Brain.Screen.setFillColor(white);
+  Brain.Screen.setPenColor(black);
+  Brain.Screen.setFont(propM);
+  Brain.Screen.drawRectangle(201, 91, 80, 60);
+  Brain.Screen.setCursor(6, 23);
+  Brain.Screen.print("Skills");
   
   if(aMode == 0){
     if(Brain.Screen.pressing()){
-      if((Brain.Screen.xPosition() > 240) && (Brain.Screen.yPosition() > 120)){
-        //Right Blue
-        Brain.Screen.setPenColor(blue);
-        Brain.Screen.setFillColor(blue);
+      if((Brain.Screen.xPosition() > 240 && Brain.Screen.yPosition() > 150) || (Brain.Screen.xPosition() > 280 && Brain.Screen.yPosition() > 120)){
+        //Left Elimination
+        Brain.Screen.setPenColor(green);
+        Brain.Screen.setFillColor(green);
         Brain.Screen.drawRectangle(0, 0, 480, 240);
         Brain.Screen.setPenColor(white);
         Brain.Screen.setFont(propXXL);
         Brain.Screen.setCursor(2, 5);
-        Brain.Screen.print("Right Blue");
+        Brain.Screen.print("Left Elim.");
         auton = 4;
-      }else if((Brain.Screen.xPosition() > 240) && (Brain.Screen.yPosition() < 121)){
-        //Left Red
-        Brain.Screen.setPenColor(red);
-        Brain.Screen.setFillColor(red);
+      }else if((Brain.Screen.xPosition() > 280 && Brain.Screen.yPosition() < 121) || (Brain.Screen.xPosition() > 240 && Brain.Screen.yPosition() < 91)){
+        //Left Qualifier
+        Brain.Screen.setPenColor(purple);
+        Brain.Screen.setFillColor(purple);
         Brain.Screen.drawRectangle(0, 0, 480, 240);
         Brain.Screen.setPenColor(white);
         Brain.Screen.setFont(propXXL);
         Brain.Screen.setCursor(2, 5);
-        Brain.Screen.print("Left Red");
+        Brain.Screen.print("Left Qual.");
         auton = 2;
-      }else if((Brain.Screen.xPosition() < 241) && (Brain.Screen.yPosition() > 120)){
-        //Left Blue
-        Brain.Screen.setPenColor(blue);
-        Brain.Screen.setFillColor(blue);
+      }else if((Brain.Screen.xPosition() < 241 && Brain.Screen.yPosition() > 150) || (Brain.Screen.xPosition() < 201 && Brain.Screen.yPosition() > 120)){
+        //Right Elimination
+        Brain.Screen.setPenColor(green);
+        Brain.Screen.setFillColor(green);
         Brain.Screen.drawRectangle(0, 0, 480, 240);
         Brain.Screen.setPenColor(white);
         Brain.Screen.setFont(propXXL);
         Brain.Screen.setCursor(2, 5);
-        Brain.Screen.print("Left Blue");
+        Brain.Screen.print("Right Elim.");
         auton = 3;
-      }else{
-        //Right Red
-        Brain.Screen.setPenColor(red);
-        Brain.Screen.setFillColor(red);
+      }else if((Brain.Screen.xPosition() < 241 && Brain.Screen.yPosition() < 91) || (Brain.Screen.xPosition() < 201 && Brain.Screen.yPosition() < 121)){
+        //Right Qualifier
+        Brain.Screen.setPenColor(purple);
+        Brain.Screen.setFillColor(purple);
         Brain.Screen.drawRectangle(0, 0, 480, 240);
         Brain.Screen.setPenColor(white);
         Brain.Screen.setFont(propXXL);
         Brain.Screen.setCursor(2, 5);
-        Brain.Screen.print("Right Red");
+        Brain.Screen.print("Right Qual.");
         auton = 1;
+      }else{
+        //Skills
+        Brain.Screen.setPenColor(white);
+        Brain.Screen.setFillColor(white);
+        Brain.Screen.drawRectangle(0, 0, 480, 240);
+        Brain.Screen.setPenColor(black);
+        Brain.Screen.setFont(propXXL);
+        Brain.Screen.setCursor(2, 6);
+        Brain.Screen.print("Skills");
+        auton = 5;
       }
       aMode = 1;
       Brain.Screen.setPenColor(black);
@@ -231,8 +227,8 @@ void pre_auton(void) {
 
 void autonomous(void) {
 
-  /*---Right Red or Right Blue---*/
-  if(auton == 1 || auton == 4){
+  /*---Right Qualifier---*/
+  if(auton == 1){
     aBase(0, fwd, 100, 0, 0, 0); //Drive towards the alliance tower on the AWP line
 
     wait(.75, sec);
@@ -259,13 +255,12 @@ void autonomous(void) {
 
     wait(1.6, sec);
 
-    aBaseStop(); //Stop and grab the tower
-
+    aBase(0, fwd, 20, 0, 0, 0); //Stop and grab the tower
     aML();
   
     aBase(0, reverse, 150, 0, 0, 0); //Reverse into the home zone
 
-    wait(.9, sec);
+    wait(1.3, sec);
 
     aBase(1, fwd, 100, 0, 0, 0); //Turn so the tower is out of our way
 
@@ -274,8 +269,8 @@ void autonomous(void) {
     aBaseStop(); //Drop off the tower
     aML();
 
-    /*---Left Red or Left Blue---*/
-  }else if(auton == 2 || auton == 3){
+    /*---Left Qualifier---*/
+  }else if(auton == 2){
     aBase(0, fwd, 50, 0, 0, 0); //Drive up to left alliance tower
 
     wait(.5, sec);
@@ -316,22 +311,22 @@ void autonomous(void) {
 
     aBaseStop(); //Drop the tower
     aML();
+    
+    /*---Right Elimination---*/
+  }else if(auton == 3){
+
+
+    /*---Left Elimination---*/
+  }else if(auton == 4){
+
+
+    /*---Skills---*/
+  }else if(auton == 5){
+
   }
 }
 
 void usercontrol(void) {
-  /*---Setting up the 'Pong' code---*/
-  /*Brain.Screen.setPenColor(cyan);
-  Brain.Screen.setFillColor(cyan);
-  Brain.Screen.drawRectangle(1, 1, 479, 239);
-  Brain.Screen.setPenColor(vex::black);
-  Brain.Screen.setFillColor(black);
-  Brain.Screen.drawRectangle(10, 10, 461, 221);
-  Brain.Screen.setPenColor(purple);
-  Brain.Screen.setFillColor(purple);
-  circleX = cSX;
-  circleY = cSY;
-  Brain.Screen.drawCircle(circleX, circleY, 20);*/
 
   /*---Sets up driver information---*/
   Controller1.Screen.clearScreen();
@@ -448,61 +443,6 @@ void usercontrol(void) {
     Controller1.Screen.print(" Degrees");*/
 
     wait(20, msec);
-
-    /*---Actual 'Pong' section of the 'Pong' code---*/
-    /*matchCounter += 1;
-    if(matchCounter >= 2){
-      Brain.Screen.setFillColor(black);
-      Brain.Screen.setPenColor(black);
-      Brain.Screen.drawCircle(circleX, circleY, 20);
-      if(circleX >= 450 || circleX <= 30 || circleY >= 210 || circleY <= 30){
-        cColor = rand() % 4;
-        Brain.Screen.setPenColor(cyan);
-        Brain.Screen.setFillColor(cyan);
-        Brain.Screen.drawRectangle(1, 1, 479, 10);
-        Brain.Screen.drawRectangle(1, 10, 10, 220);
-        Brain.Screen.drawRectangle(470, 10, 10, 220);
-        Brain.Screen.drawRectangle(1, 230, 479, 10);
-        if(circleX >= 450){
-          negX = 1;
-        }else{
-          negX = 0;
-        }
-        if(circleY >= 210){
-          negY = 1;
-        }else{
-          negY = 0;
-        }
-      }
-
-      if(negX == 1){
-        circleX -= 4.5;
-      }else{
-        circleX += 4.5;
-      }
-
-      if(negY == 1){
-        circleY -= 3.5;
-      }else{
-        circleY += 3.5;
-      }
-
-      if(cColor == 0){
-        Brain.Screen.setPenColor(purple);
-        Brain.Screen.setFillColor(purple);
-      }else if(cColor == 1){
-        Brain.Screen.setPenColor(green);
-        Brain.Screen.setFillColor(green);
-      }else if(cColor == 2){
-        Brain.Screen.setPenColor(orange);
-        Brain.Screen.setFillColor(orange);
-      }else if(cColor == 3){
-        Brain.Screen.setPenColor(yellow);
-        Brain.Screen.setFillColor(yellow);
-      }
-      Brain.Screen.drawCircle(circleX, circleY, 20);
-      matchCounter = 0;
-    }*/
   }
 }
 
