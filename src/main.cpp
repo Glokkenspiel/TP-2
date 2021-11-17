@@ -14,11 +14,12 @@
 // lift                 motor_group   5, 9            
 // lB                   motor_group   1, 2            
 // rB                   motor_group   3, 4            
-// mTLift               motor         8               
+// mTLift               motor         16              
 // pF                   digital_out   A               
 // pB                   digital_out   B               
 // pP                   digital_out   C               
 // GPS                  gps           10              
+// bTLift               motor         20              
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -219,8 +220,8 @@ void aML(){
 void pre_auton(void) {
   vexcodeInit();
   lift.setStopping(brake);
-  mTLift.setStopping(brake);
   mTLift.setStopping(hold);
+  bTLift.setStopping(brake);
   autonSelect();
   Brain.Screen.pressed(autonSelect);
 }
@@ -376,6 +377,7 @@ void usercontrol(void) {
     }else{
       lift.stop();
     }
+    liPos = lift.position(degrees);
 
 
     /*---Used to rotate the Main Tower Lift---*/
@@ -386,49 +388,15 @@ void usercontrol(void) {
     }else{
       mTLift.stop();
     }
-
-
-    /*---When pushed, will cause the front tower lift to raise or lower---*/
-    if(Controller1.ButtonDown.pressing()){
-      if(buttonDownPressing == 0){
-        if(pneumaticFront == 0){
-          pF.set(1);
-          pneumaticFront = 1;
-        }else{
-          pF.set(0);
-          pneumaticFront = 0;
-        }
-      }
-      buttonDownPressing = 1;
-    }else{
-      buttonDownPressing = 0;
-    }
-
-
-    /*---When pushed, will cause the back tower lift to raise or lower---*/
-    if(Controller1.ButtonA.pressing()){
-      if(buttonAPressing == 0){
-        if(pneumaticBack == 0){
-          pB.set(1);
-          pneumaticBack = 1;
-        }else{
-          pB.set(0);
-          pneumaticBack = 0;
-        }
-      }
-      buttonAPressing = 1;
-    }else{
-      buttonAPressing = 0;
-    }
-
-    liPos = lift.position(degrees);
     mTPos = mTLift.position(degrees);
 
-    /*---While pushed, the 'Plunger' will release---*/
-    if(Controller1.ButtonB.pressing()){
-      pP.set(1);
+    /*---Used to rotate the Back Tower Lift---*/
+    if(Controller1.ButtonA.pressing()){
+      bTLift.spin(fwd, 100, percent);
+    }else if(Controller1.ButtonY.pressing()){
+      bTLift.spin(reverse, 100, percent);
     }else{
-      pP.set(0);
+      bTLift.stop();
     }
 
     /*---Puts the battery percent onto the controller---*/
@@ -439,7 +407,7 @@ void usercontrol(void) {
     /*Controller1.Screen.setCursor(3, 1);
     Controller1.Screen.clearLine(3);
     Controller1.Screen.print("mTLift Position: ");
-    Controller1.Screen.print(mTPos);
+    Controller1.Screen.print(liPos);
     Controller1.Screen.print(" Degrees");*/
 
     wait(20, msec);
