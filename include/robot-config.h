@@ -13,6 +13,7 @@ extern digital_out pB;
 extern digital_out pP;
 extern gps GPS;
 extern motor bTLift;
+extern limit bTLSwitch;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

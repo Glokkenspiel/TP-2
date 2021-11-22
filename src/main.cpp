@@ -15,11 +15,12 @@
 // lB                   motor_group   1, 2            
 // rB                   motor_group   3, 4            
 // mTLift               motor         16              
-// pF                   digital_out   A               
+// pF                   digital_out   D               
 // pB                   digital_out   B               
 // pP                   digital_out   C               
 // GPS                  gps           10              
 // bTLift               motor         20              
+// bTLSwitch            limit         A               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -38,6 +39,7 @@ bool pneumaticFront = 0;
 bool pneumaticBack = 0;
 bool direct = 0;
 bool aMode = 0;
+bool lORr = 0;
 
 int uni = 0; //Universal variable
 int n = 0;
@@ -45,9 +47,15 @@ int a = 2;
 int x = 10;
 int y = 30;
 int auton = 0;
+int xORyReach = 0;
 
 float liPos = 0;
 float mTPos = 0;
+float pheta1 = 0;
+float pheta2 = 0;
+float pheta3 = 0;
+float slackN = 0;
+float slackP = 0;
 
 /*---Auton Selector---*/
 void autonSelect(){
@@ -217,6 +225,42 @@ void aML(){
   mTLift.stop();
 }
 
+
+/*---Drive to a certain point and position and face a certain direction---*/
+void driveToPoint(float xPos, float yPos, float head){
+  while(/*GPS.xPosition(mm) == (xPos +- 5) && GPS.yPosition(mm) == (yPos +- 5)*/ 1){
+    pheta1 = atan((yPos-GPS.yPosition(mm))/(xPos-GPS.xPosition(mm)));
+    if(pheta1 < 0){
+      pheta1 = pheta1 + 360;
+    }
+    if(pheta1 < 50){
+      slackN = pheta1 + 310;
+      slackP = pheta1;
+    }else if(pheta1 >= 310){
+      slackN = pheta1;
+      slackP = pheta1 - 310;
+    }else{
+      slackN = pheta1;
+      slackP = pheta1;
+    }
+    aBase(1, fwd, 50, 0, 1, 0);
+    while(GPS.heading() < slackN || GPS.heading() > slackP){
+      wait(1, msec);
+      Controller1.Screen.clearScreen();
+      Controller1.Screen.setCursor(1, 1);
+      Controller1.Screen.print(pheta1);
+      Controller1.Screen.setCursor(2, 1);
+      Controller1.Screen.print(GPS.heading());
+      /*Controller1.Screen.setCursor(3, 1);
+      Controller1.Screen.print(GPS.xPosition(mm));
+      Controller1.Screen.setCursor(3, 10);
+      Controller1.Screen.print(GPS.yPosition(mm));*/
+    }
+    aBaseStop();
+    break;
+  }
+}
+
 void pre_auton(void) {
   vexcodeInit();
   lift.setStopping(brake);
@@ -323,7 +367,8 @@ void autonomous(void) {
 
     /*---Skills---*/
   }else if(auton == 5){
-
+    GPS.setLocation(1500, -1500, mm, 0, degrees);
+    driveToPoint(0, 0, 0);
   }
 }
 
@@ -382,21 +427,37 @@ void usercontrol(void) {
 
     /*---Used to rotate the Main Tower Lift---*/
     if(Controller1.ButtonR2.pressing() && mTPos < 260){
-      mTLift.spin(fwd, 75, rpm);
+      mTLift.spin(fwd, 150, rpm);
     }else if(Controller1.ButtonR1.pressing() && mTPos > 0){
-      mTLift.spin(reverse, 75, rpm);
+      mTLift.spin(reverse, 150, rpm);
     }else{
       mTLift.stop();
     }
     mTPos = mTLift.position(degrees);
 
     /*---Used to rotate the Back Tower Lift---*/
-    if(Controller1.ButtonA.pressing()){
+    if(Controller1.ButtonB.pressing() && bTLift.position(degrees) < 1400 && !bTLSwitch.pressing()){
       bTLift.spin(fwd, 100, percent);
-    }else if(Controller1.ButtonY.pressing()){
+    }else if(Controller1.ButtonX.pressing() && bTLift.position(degrees) > 0){
       bTLift.spin(reverse, 100, percent);
     }else{
       bTLift.stop();
+    }
+
+    /*---Used to control the Front Pnuematic Claw---*/
+    if(Controller1.ButtonA.pressing()){
+      if(buttonAPressing == 0){
+        if(pneumaticFront == 0){
+          pF.set(1);
+          pneumaticFront = 1;
+        }else{
+          pF.set(0);
+          pneumaticFront = 0;
+        }
+        buttonAPressing = 1;
+      }
+    }else{
+      buttonAPressing = 0;
     }
 
     /*---Puts the battery percent onto the controller---*/
@@ -407,7 +468,7 @@ void usercontrol(void) {
     /*Controller1.Screen.setCursor(3, 1);
     Controller1.Screen.clearLine(3);
     Controller1.Screen.print("mTLift Position: ");
-    Controller1.Screen.print(liPos);
+    Controller1.Screen.print(bTLift.position(degrees));
     Controller1.Screen.print(" Degrees");*/
 
     wait(20, msec);
