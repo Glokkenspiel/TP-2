@@ -35,6 +35,8 @@ bool driveMode = 0;
 bool buttonLeftPressing = 0;
 bool buttonDownPressing = 0;
 bool buttonAPressing = 0;
+bool buttonRPressing = 0;
+bool upOrDown = 1;
 bool pneumaticFront = 0;
 bool pneumaticBack = 0;
 bool direct = 0;
@@ -213,10 +215,10 @@ void aPF(){
 /*---Activate the Main Tower Lift---*/
 void aML(){
   if(direct == 0){
-    mTLift.spin(fwd, 200, rpm);
+    mTLift.spin(fwd, 100, percent);
     direct = 1;
   }else{
-    mTLift.spin(reverse, 200, rpm);
+    mTLift.spin(reverse, 100, percent);
     direct = 0;
   }
 
@@ -268,46 +270,47 @@ void pre_auton(void) {
   bTLift.setStopping(brake);
   autonSelect();
   Brain.Screen.pressed(autonSelect);
+  pF.set(0);
 }
 
 void autonomous(void) {
 
   /*---Right Qualifier---*/
   if(auton == 1){
-    aBase(0, fwd, 100, 0, 0, 0); //Drive towards the alliance tower on the AWP line
+    aBase(0, fwd, 150, 0, 0, 0); //Drive towards the alliance tower on the AWP line
 
     wait(.75, sec);
 
     aBaseStop();
     aML(); //Grab the tower
 
-    aBase(0, reverse, 50, 0, 0, 0); //Back off of the AWP line
+    aBase(0, reverse, 75, 0, 0, 0); //Back off of the AWP line
 
     wait(1, sec);
 
     aBaseStop(); //Stop
     aML(); //Drop the Tower
 
-    aBase(0,reverse, 50, 0, 0, 0); //Back up further
+    aBase(0, reverse, 75, 0, 0, 0); //Back up further
 
     wait(.35, sec);
 
-    aBase(1, fwd, 120, 0, 1, 0); //Turn towards the right neutral tower
+    aBase(1, fwd, 180, 0, 1, 0); //Turn towards the right neutral tower
 
     wait(.175, sec);
 
-    aBase(0, fwd, 100, 0, 0, 0); //Drive towards the tower
+    aBase(0, fwd, 150, 0, 0, 0); //Drive towards the tower
 
     wait(1.6, sec);
 
-    aBase(0, fwd, 20, 0, 0, 0); //Stop and grab the tower
+    aBase(0, fwd, 30, 0, 0, 0); //Stop and grab the tower
     aML();
   
-    aBase(0, reverse, 150, 0, 0, 0); //Reverse into the home zone
+    aBase(0, reverse, 225, 0, 0, 0); //Reverse into the home zone
 
     wait(1.3, sec);
 
-    aBase(1, fwd, 100, 0, 0, 0); //Turn so the tower is out of our way
+    aBase(1, fwd, 150, 0, 0, 0); //Turn so the tower is out of our way
 
     wait(.5, sec);
 
@@ -316,20 +319,21 @@ void autonomous(void) {
 
     /*---Left Qualifier---*/
   }else if(auton == 2){
-    aBase(0, fwd, 50, 0, 0, 0); //Drive up to left alliance tower
+    aBase(0, fwd, 75, 0, 0, 0); //Drive up to left alliance tower
 
     wait(.5, sec);
 
+    aBaseStop();
     aML(); //Drop ring into alliance tower
     aML();
 
-    aBase(0, reverse, 100, 0, 0, 0); //Back away from tower
+    aBase(0, reverse, 150, 0, 0, 0); //Back away from tower
 
-    wait(.75, sec);
+    wait(.25, sec);
 
-    aBase(1, fwd, 100, 0, 1, 0); //Turn towards the left neutral tower
+    aBase(1, fwd, 75, 0, 1, 0); //Turn towards the left neutral tower
 
-    wait(.4, sec);
+    wait(.73, sec);
 
     aBaseStop(); //Let the bot settle
 
@@ -337,29 +341,40 @@ void autonomous(void) {
 
     aBase(0, fwd, 200, 0, 0, 0); //Drive towards the tower
 
-    wait(.9, sec);
+    wait(1, sec);
 
-    aBase(0, fwd, 50, 0, 0, 0); //Slow down as to not knock the tower
+    aBase(0, fwd, 75, 0, 0, 0); //Slow down as to not knock the tower
 
-    wait(.75, sec);
+    wait(.5, sec);
 
     aBaseStop();
 
     wait(.1, sec);
 
-    aBase(0, fwd, 20, 0, 0, 0); //Grab the tower
+    aBase(0, fwd, 30, 0, 0, 0); //Grab the tower
     aML();
 
     aBase(0, reverse, 200, 0, 0, 0); //Back into home zone
 
-    wait(.9, sec);
+    wait(1.2, sec);
 
     aBaseStop(); //Drop the tower
     aML();
     
     /*---Right Elimination---*/
   }else if(auton == 3){
+    bTLift.spin(fwd, 100, percent);
+    aBase(0, fwd, 200, 0, 0, 0);
 
+    wait(1.3, sec);
+
+    bTLift.spin(reverse, 100, percent);
+    aBase(0, reverse, 200, 0, 0, 0);
+
+    wait(1.5, sec);
+
+    bTLift.stop();
+    aBaseStop();
 
     /*---Left Elimination---*/
   }else if(auton == 4){
@@ -367,8 +382,180 @@ void autonomous(void) {
 
     /*---Skills---*/
   }else if(auton == 5){
-    GPS.setLocation(1500, -1500, mm, 0, degrees);
-    driveToPoint(0, 0, 0);
+    /*---GPS work for future---*/
+    /*GPS.setLocation(1500, -1500, mm, 0, degrees);
+    driveToPoint(0, 0, 0);*/
+
+    /*---Current work---*/
+    bTLift.spin(fwd, 200, rpm); //Lower the back tower lift
+
+    wait(1, sec);
+
+    aBase(0, reverse, 200, 0, 0, 0); //Begin Speeding towards the other side of the field
+
+    wait(.3, sec);
+
+    bTLift.stop(); //Stop the back tower lift from ramming into the floor
+
+    wait(.2, sec);
+
+    bTLift.spin(reverse, 200, rpm); //Lift the red alliance tower from the AWP line
+
+    wait(1.3, sec);
+
+    bTLift.stop(); //Stop the lift from slamming into the robot
+
+    wait(1, sec);
+
+    aBaseStop(); //
+
+    wait(.2, sec);
+
+    aBase(1, fwd, 20, 0, 0, 0); //
+
+    wait(.5, sec);
+
+    bTLift.spin(fwd, 100, percent); //Begin dropping the red alliance goal
+    aBase(1, fwd, 50, 0, 0, 0); //Turn towards the right neutral tower
+
+    wait(.2, sec);
+
+    aBaseStop(); //Stop turning
+
+    wait(.1, sec);
+
+    aBase(0, fwd, 200, 0, 0, 0); //Drive towards the tower
+
+    wait(.9, sec);
+
+    aBase(0, fwd, 100, 0, 0, 0); //Slow down to prevent coasting and hitting the tower
+    
+    wait(.2, sec);
+
+    bTLift.stop(); //Stop the lift from slamming into the robot
+
+    wait(.8, sec);
+
+    aBaseStop(); //Stop in front of the tower
+    mTLift.spin(fwd, 100, percent); // Clamp onto the tower
+
+    wait(.3, sec);
+
+    lift.spin(reverse, 100, percent); //Raise the main lift to prepare to place the goal on the platform
+    aBase(1, fwd, 50, 0, 0, 0); //Torn towards the platform
+    bTLift.spin(reverse, 100, percent); //Raise the back tower lift to prevent dragging
+
+    wait(.4, sec);
+
+    aBase(0, fwd, 100, 0, 0, 0); //Drive up to the platform
+    bTLift.stop(); //Stop the lift
+
+    wait(1.5, sec);
+
+    lift.stop(); //Prevent the lift from attempting to go to high
+
+    wait(.25, sec);
+
+    aBase(1, fwd, 50, 0, 1, 0); //Turn towards the platform for better angle
+
+    wait(.6, sec);
+
+    aBase(0, fwd, 100, 0, 0, 0); //Drive up to the platform
+
+    wait(.75, sec);
+
+    lift.spin(fwd, 200, rpm); //Lower the lift to level the platform
+
+    wait(.25, sec);
+
+    aBaseStop(); //Prevent ramming onto the platform and ruining the angle
+
+    wait(.75, sec);
+
+    mTLift.spin(reverse, 100, percent); //Drop the tower
+
+    wait(.3, sec);
+
+    mTLift.stop();
+    lift.spin(reverse, 200, rpm); //Lift up over the lip of the platform
+
+    wait(.8, sec);
+
+    aBase(0, reverse, 75, 0, 0, 0); //Back away from the platform
+    lift.stop();
+
+    wait(.75, sec);
+
+    aBase(1, fwd, 50, 0, 0, 0); //Turn towards the left wall
+
+    wait(.75, sec);
+
+    aBase(0, fwd, 200, 0, 0, 0); //Drive and slam into the wall
+
+    wait(2, sec);
+
+    aBase(0, fwd, 50, 0, 0, 0); //Prevent bouncing off of the wall
+
+    wait(.2, sec);
+
+    aBase(0, reverse, 50, 0, 0, 0); //Back away from the wall
+
+    wait(1, sec);
+
+    aBase(1, fwd, 50, 0, 0, 0); //Turn towards the goal under the platform
+
+    wait(.6, sec);
+
+    aBase(0, reverse, 100, 0, 0, 0); //Drive to under the platform
+    bTLift.spin(fwd, 100, percent); //Lower the back tower lift
+
+    wait(.5, sec);
+
+    bTLift.stop();
+
+    wait(.5, sec);
+
+    bTLift.spin(reverse, 100, percent); //Grab the tower
+    lift.spin(fwd, 100, percent); //Lower the main lift
+    aBaseStop();
+
+    wait(.3, sec);
+
+    aBase(0, fwd, 100, 0, 0, 0); //Pull out from under the platform
+
+    wait(.5, sec);
+
+    aBase(1, fwd, 100, 0, 0, 0); //Turn towards the left neutral tower
+
+    wait(.275, sec);
+
+    aBase(0, fwd, 200, 0, 0, 0); //Drive towards the tower
+    lift.stop();
+
+    wait(.4, sec);
+
+    bTLift.stop();
+    aBase(0, fwd, 100, 0, 0, 0); //Slow down to not knock over the tower
+
+    wait(.9, sec);
+
+    aML(); //Grab the tower
+
+    lift.spin(reverse, 100, percent); //Raise the tower
+    aBase(1, fwd, 75, 0, 0, 0); //Turn towards the far platform
+
+    wait(.3, sec);
+
+    aBase(0, fwd, 200, 0, 0, 0); //Drive towards the platform
+
+    wait(3, sec);
+
+    aBase(1, fwd, 75, 0, 1, 0); //Turn towards the platform for a better angle
+
+    wait(.2, sec);
+
+    lift.stop();
+    aBaseStop();
   }
 }
 
@@ -424,29 +611,18 @@ void usercontrol(void) {
     }
     liPos = lift.position(degrees);
 
-
     /*---Used to rotate the Main Tower Lift---*/
-    if(Controller1.ButtonR2.pressing() && mTPos < 260){
-      mTLift.spin(fwd, 150, rpm);
-    }else if(Controller1.ButtonR1.pressing() && mTPos > 0){
-      mTLift.spin(reverse, 150, rpm);
+    if(Controller1.ButtonR2.pressing()){
+      mTLift.spin(fwd, 100, percent);
+    }else if(Controller1.ButtonR1.pressing()){
+      mTLift.spin(reverse, 100, percent);
     }else{
       mTLift.stop();
     }
-    mTPos = mTLift.position(degrees);
-
-    /*---Used to rotate the Back Tower Lift---*/
-    if(Controller1.ButtonB.pressing() && bTLift.position(degrees) < 1400 && !bTLSwitch.pressing()){
-      bTLift.spin(fwd, 100, percent);
-    }else if(Controller1.ButtonX.pressing() && bTLift.position(degrees) > 0){
-      bTLift.spin(reverse, 100, percent);
-    }else{
-      bTLift.stop();
-    }
 
     /*---Used to control the Front Pnuematic Claw---*/
-    if(Controller1.ButtonA.pressing()){
-      if(buttonAPressing == 0){
+    /*if(Controller1.ButtonR1.pressing() || Controller1.ButtonR2.pressing()){
+      if(buttonRPressing == 0){
         if(pneumaticFront == 0){
           pF.set(1);
           pneumaticFront = 1;
@@ -454,10 +630,31 @@ void usercontrol(void) {
           pF.set(0);
           pneumaticFront = 0;
         }
+        buttonRPressing = 1;
+      }
+    }else{
+      buttonRPressing = 0;
+    }*/
+
+    /*---Used to rotate the Back Tower Lift---*/
+    if(Controller1.ButtonA.pressing()){
+      if(buttonAPressing == 0){
+        if(upOrDown == 0){
+          upOrDown = 1;
+        }else{
+          upOrDown = 0;
+        }
         buttonAPressing = 1;
       }
     }else{
       buttonAPressing = 0;
+    }
+    if(upOrDown == 0 && bTLift.position(degrees) < 1350){
+      bTLift.spin(fwd, 100, percent);
+    }else if(upOrDown == 1 && bTLift.position(degrees) > 0){
+      bTLift.spin(reverse, 100, percent);
+    }else{
+      bTLift.stop();
     }
 
     /*---Puts the battery percent onto the controller---*/
