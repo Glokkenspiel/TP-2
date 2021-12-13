@@ -363,18 +363,23 @@ void autonomous(void) {
     
     /*---Right Elimination---*/
   }else if(auton == 3){
-    bTLift.spin(fwd, 100, percent);
-    aBase(0, fwd, 200, 0, 0, 0);
 
-    wait(1.3, sec);
+    aBase(0, fwd, 400, 0, 0, 0);
 
-    bTLift.spin(reverse, 100, percent);
+    wait(1.15, sec);
+
+    aBaseStop();
+
+    aML();
     aBase(0, reverse, 200, 0, 0, 0);
 
     wait(1.5, sec);
 
-    bTLift.stop();
     aBaseStop();
+
+    wait(6,sec);
+
+    aBase(0, reverse, 400, 0, 0, 0);
 
     /*---Left Elimination---*/
   }else if(auton == 4){
@@ -454,7 +459,7 @@ void autonomous(void) {
 
     lift.stop(); //Prevent the lift from attempting to go to high
 
-    wait(.25, sec);
+    wait(.5, sec); //THIS IS WHAT WE CHANGE(og = .325)
 
     aBase(1, fwd, 50, 0, 1, 0); //Turn towards the platform for better angle
 
@@ -513,7 +518,7 @@ void autonomous(void) {
 
     bTLift.stop();
 
-    wait(.5, sec);
+    wait(.75, sec);
 
     bTLift.spin(reverse, 100, percent); //Grab the tower
     lift.spin(fwd, 100, percent); //Lower the main lift
@@ -523,18 +528,24 @@ void autonomous(void) {
 
     aBase(0, fwd, 100, 0, 0, 0); //Pull out from under the platform
 
-    wait(.5, sec);
+    wait(.75, sec);
 
     aBase(1, fwd, 100, 0, 0, 0); //Turn towards the left neutral tower
 
-    wait(.275, sec);
+    wait(.025, sec);
 
-    aBase(0, fwd, 200, 0, 0, 0); //Drive towards the tower
     lift.stop();
 
-    wait(.4, sec);
+    wait(.25, sec);
+
+    aBase(0, fwd, 200, 0, 0, 0); //Drive towards the tower
+
+    wait(.15, sec);
 
     bTLift.stop();
+
+    wait(.25, sec);
+
     aBase(0, fwd, 100, 0, 0, 0); //Slow down to not knock over the tower
 
     wait(.9, sec);
@@ -546,16 +557,33 @@ void autonomous(void) {
 
     wait(.3, sec);
 
-    aBase(0, fwd, 200, 0, 0, 0); //Drive towards the platform
+    aBase(0, fwd, 150, 0, 0, 0); //Drive towards the platform
 
-    wait(3, sec);
+    wait(1.5, sec);
+
+    lift.stop();
+
+    wait(1, sec);
 
     aBase(1, fwd, 75, 0, 1, 0); //Turn towards the platform for a better angle
 
-    wait(.2, sec);
+    wait(.5, sec);
+
+    aBaseStop();
+    lift.spin(fwd, 100, percent);
+
+    wait(1, sec);
+
+    mTLift.spin(reverse, 100, percent); //Drop the tower
+
+    wait(.3, sec);
+
+    mTLift.stop();
+    lift.spin(reverse, 200, rpm); //Lift up over the lip of the platform
+
+    wait(.5, sec);
 
     lift.stop();
-    aBaseStop();
   }
 }
 

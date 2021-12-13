@@ -9,14 +9,14 @@ brain  Brain;
 
 // VEXcode device constructors
 controller Controller1 = controller(primary);
-motor liftMotorA = motor(PORT5, ratio18_1, true);
-motor liftMotorB = motor(PORT9, ratio18_1, false);
+motor liftMotorA = motor(PORT5, ratio18_1, false);
+motor liftMotorB = motor(PORT9, ratio18_1, true);
 motor_group lift = motor_group(liftMotorA, liftMotorB);
-motor lBMotorA = motor(PORT1, ratio18_1, false);
-motor lBMotorB = motor(PORT2, ratio18_1, false);
+motor lBMotorA = motor(PORT1, ratio18_1, true);
+motor lBMotorB = motor(PORT2, ratio18_1, true);
 motor_group lB = motor_group(lBMotorA, lBMotorB);
-motor rBMotorA = motor(PORT3, ratio18_1, true);
-motor rBMotorB = motor(PORT4, ratio18_1, true);
+motor rBMotorA = motor(PORT3, ratio18_1, false);
+motor rBMotorB = motor(PORT4, ratio18_1, false);
 motor_group rB = motor_group(rBMotorA, rBMotorB);
 motor mTLift = motor(PORT16, ratio18_1, false);
 digital_out pF = digital_out(Brain.ThreeWirePort.D);
