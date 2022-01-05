@@ -18,13 +18,14 @@ motor_group lB = motor_group(lBMotorA, lBMotorB);
 motor rBMotorA = motor(PORT3, ratio18_1, false);
 motor rBMotorB = motor(PORT4, ratio18_1, false);
 motor_group rB = motor_group(rBMotorA, rBMotorB);
-motor mTLift = motor(PORT16, ratio18_1, false);
+motor mTLift = motor(PORT11, ratio18_1, false);
 digital_out pF = digital_out(Brain.ThreeWirePort.D);
 digital_out pB = digital_out(Brain.ThreeWirePort.B);
 digital_out pP = digital_out(Brain.ThreeWirePort.C);
 gps GPS = gps(PORT10, 192.50, -80.00, mm, 90);
 motor bTLift = motor(PORT20, ratio18_1, false);
 limit bTLSwitch = limit(Brain.ThreeWirePort.A);
+motor conveyor = motor(PORT13, ratio18_1, true);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable

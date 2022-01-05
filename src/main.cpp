@@ -14,13 +14,14 @@
 // lift                 motor_group   5, 9            
 // lB                   motor_group   1, 2            
 // rB                   motor_group   3, 4            
-// mTLift               motor         16              
+// mTLift               motor         11              
 // pF                   digital_out   D               
 // pB                   digital_out   B               
 // pP                   digital_out   C               
 // GPS                  gps           10              
 // bTLift               motor         20              
 // bTLSwitch            limit         A               
+// conveyor             motor         13              
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -36,12 +37,16 @@ bool buttonLeftPressing = 0;
 bool buttonDownPressing = 0;
 bool buttonAPressing = 0;
 bool buttonRPressing = 0;
-bool upOrDown = 1;
+bool upOrDown = 0;
 bool pneumaticFront = 0;
 bool pneumaticBack = 0;
 bool direct = 0;
 bool aMode = 0;
 bool lORr = 0;
+bool bTLDown = 0;
+bool bTLMax = 0;
+bool convSpin = 0;
+bool unclogFunc = 0;
 
 int uni = 0; //Universal variable
 int n = 0;
@@ -50,6 +55,7 @@ int x = 10;
 int y = 30;
 int auton = 0;
 int xORyReach = 0;
+int matchClock = 0;
 
 float liPos = 0;
 float mTPos = 0;
@@ -58,6 +64,8 @@ float pheta2 = 0;
 float pheta3 = 0;
 float slackN = 0;
 float slackP = 0;
+float convChange = 0;
+float convLast = 0;
 
 /*---Auton Selector---*/
 void autonSelect(){
@@ -70,19 +78,23 @@ void autonSelect(){
   Brain.Screen.drawRectangle(0, 121, 480, 120);
   Brain.Screen.setFillColor(white);
   Brain.Screen.setPenColor(white);
-  Brain.Screen.drawRectangle(240, 0, 2, 240);
+  Brain.Screen.drawRectangle(160, 0, 2, 120);
+  Brain.Screen.drawRectangle(319, 0, 2, 120);
+  Brain.Screen.drawRectangle(240, 121, 2, 120);
   Brain.Screen.drawRectangle(0, 120, 480, 2);
   Brain.Screen.setFont(propXL);
   Brain.Screen.setFillColor(purple);
   Brain.Screen.setCursor(2, 2);
-  Brain.Screen.print("R. Qual.");
-  Brain.Screen.setCursor(2, 15);
   Brain.Screen.print("L. Qual.");
+  Brain.Screen.setCursor(2, 18);
+  Brain.Screen.print("R. Qual.");
+  Brain.Screen.setCursor(2, 11);
+  Brain.Screen.print("S. WP");
   Brain.Screen.setFillColor(green);
   Brain.Screen.setCursor(5, 2);
-  Brain.Screen.print("R. Elim.");
+  Brain.Screen.print("L. Elim.");
   Brain.Screen.setCursor(5, 15);
-  Brain.Screen.print("L. Elim");
+  Brain.Screen.print("R. Elim");
   Brain.Screen.setFillColor(white);
   Brain.Screen.setPenColor(black);
   Brain.Screen.setFont(propM);
@@ -93,26 +105,6 @@ void autonSelect(){
   if(aMode == 0){
     if(Brain.Screen.pressing()){
       if((Brain.Screen.xPosition() > 240 && Brain.Screen.yPosition() > 150) || (Brain.Screen.xPosition() > 280 && Brain.Screen.yPosition() > 120)){
-        //Left Elimination
-        Brain.Screen.setPenColor(green);
-        Brain.Screen.setFillColor(green);
-        Brain.Screen.drawRectangle(0, 0, 480, 240);
-        Brain.Screen.setPenColor(white);
-        Brain.Screen.setFont(propXXL);
-        Brain.Screen.setCursor(2, 5);
-        Brain.Screen.print("Left Elim.");
-        auton = 4;
-      }else if((Brain.Screen.xPosition() > 280 && Brain.Screen.yPosition() < 121) || (Brain.Screen.xPosition() > 240 && Brain.Screen.yPosition() < 91)){
-        //Left Qualifier
-        Brain.Screen.setPenColor(purple);
-        Brain.Screen.setFillColor(purple);
-        Brain.Screen.drawRectangle(0, 0, 480, 240);
-        Brain.Screen.setPenColor(white);
-        Brain.Screen.setFont(propXXL);
-        Brain.Screen.setCursor(2, 5);
-        Brain.Screen.print("Left Qual.");
-        auton = 2;
-      }else if((Brain.Screen.xPosition() < 241 && Brain.Screen.yPosition() > 150) || (Brain.Screen.xPosition() < 201 && Brain.Screen.yPosition() > 120)){
         //Right Elimination
         Brain.Screen.setPenColor(green);
         Brain.Screen.setFillColor(green);
@@ -122,7 +114,7 @@ void autonSelect(){
         Brain.Screen.setCursor(2, 5);
         Brain.Screen.print("Right Elim.");
         auton = 3;
-      }else if((Brain.Screen.xPosition() < 241 && Brain.Screen.yPosition() < 91) || (Brain.Screen.xPosition() < 201 && Brain.Screen.yPosition() < 121)){
+      }else if(Brain.Screen.xPosition() > 320 && Brain.Screen.yPosition() < 121){
         //Right Qualifier
         Brain.Screen.setPenColor(purple);
         Brain.Screen.setFillColor(purple);
@@ -132,6 +124,36 @@ void autonSelect(){
         Brain.Screen.setCursor(2, 5);
         Brain.Screen.print("Right Qual.");
         auton = 1;
+      }else if((Brain.Screen.xPosition() < 241 && Brain.Screen.yPosition() > 150) || (Brain.Screen.xPosition() < 201 && Brain.Screen.yPosition() > 120)){
+        //Left Elimination
+        Brain.Screen.setPenColor(green);
+        Brain.Screen.setFillColor(green);
+        Brain.Screen.drawRectangle(0, 0, 480, 240);
+        Brain.Screen.setPenColor(white);
+        Brain.Screen.setFont(propXXL);
+        Brain.Screen.setCursor(2, 5);
+        Brain.Screen.print("Left Elim.");
+        auton = 4;
+      }else if(Brain.Screen.xPosition() < 161 && Brain.Screen.yPosition() < 121){
+        //Left Qualifier
+        Brain.Screen.setPenColor(purple);
+        Brain.Screen.setFillColor(purple);
+        Brain.Screen.drawRectangle(0, 0, 480, 240);
+        Brain.Screen.setPenColor(white);
+        Brain.Screen.setFont(propXXL);
+        Brain.Screen.setCursor(2, 5);
+        Brain.Screen.print("Left Qual.");
+        auton = 2;
+      }else if((Brain.Screen.xPosition() < 201 && Brain.Screen.yPosition() < 120) || (Brain.Screen.xPosition() > 280 && Brain.Screen.yPosition() < 120) || (Brain.Screen.xPosition() > 200 && Brain.Screen.yPosition() < 90)){
+        //Solo Win Point
+        Brain.Screen.setPenColor(purple);
+        Brain.Screen.setFillColor(purple);
+        Brain.Screen.drawRectangle(0, 0, 480, 240);
+        Brain.Screen.setPenColor(white);
+        Brain.Screen.setFont(propXXL);
+        Brain.Screen.setCursor(2, 5);
+        Brain.Screen.print("Solo W.P.");
+        auton = 6;
       }else{
         //Skills
         Brain.Screen.setPenColor(white);
@@ -370,7 +392,10 @@ void autonomous(void) {
 
     aBaseStop();
 
-    aML();
+    mTLift.spin(fwd, 100, percent);
+
+    wait(.5, sec);
+    
     aBase(0, reverse, 200, 0, 0, 0);
 
     wait(1.5, sec);
@@ -410,7 +435,7 @@ void autonomous(void) {
 
     bTLift.stop(); //Stop the lift from slamming into the robot
 
-    wait(1, sec);
+    wait(.9, sec);
 
     aBaseStop(); //
 
@@ -423,7 +448,7 @@ void autonomous(void) {
     bTLift.spin(fwd, 100, percent); //Begin dropping the red alliance goal
     aBase(1, fwd, 50, 0, 0, 0); //Turn towards the right neutral tower
 
-    wait(.2, sec);
+    wait(.175, sec);
 
     aBaseStop(); //Stop turning
 
@@ -439,7 +464,7 @@ void autonomous(void) {
 
     bTLift.stop(); //Stop the lift from slamming into the robot
 
-    wait(.8, sec);
+    wait(.9, sec);
 
     aBaseStop(); //Stop in front of the tower
     mTLift.spin(fwd, 100, percent); // Clamp onto the tower
@@ -447,19 +472,22 @@ void autonomous(void) {
     wait(.3, sec);
 
     lift.spin(reverse, 100, percent); //Raise the main lift to prepare to place the goal on the platform
-    aBase(1, fwd, 50, 0, 0, 0); //Torn towards the platform
+    aBase(1, fwd, 50, 0, 0, 0); //Turn towards the platform
     bTLift.spin(reverse, 100, percent); //Raise the back tower lift to prevent dragging
 
-    wait(.4, sec);
+    wait(.41, sec);
 
     aBase(0, fwd, 100, 0, 0, 0); //Drive up to the platform
+
+    wait(.8, sec);
+
     bTLift.stop(); //Stop the lift
 
-    wait(1.5, sec);
+    wait(.7, sec);
 
     lift.stop(); //Prevent the lift from attempting to go to high
 
-    wait(.5, sec); //THIS IS WHAT WE CHANGE(og = .325)
+    wait(.375, sec);
 
     aBase(1, fwd, 50, 0, 1, 0); //Turn towards the platform for better angle
 
@@ -471,11 +499,11 @@ void autonomous(void) {
 
     lift.spin(fwd, 200, rpm); //Lower the lift to level the platform
 
-    wait(.25, sec);
+    wait(.1, sec);
 
     aBaseStop(); //Prevent ramming onto the platform and ruining the angle
 
-    wait(.75, sec);
+    wait(.35, sec);
 
     mTLift.spin(reverse, 100, percent); //Drop the tower
 
@@ -484,7 +512,7 @@ void autonomous(void) {
     mTLift.stop();
     lift.spin(reverse, 200, rpm); //Lift up over the lip of the platform
 
-    wait(.8, sec);
+    wait(.75, sec);
 
     aBase(0, reverse, 75, 0, 0, 0); //Back away from the platform
     lift.stop();
@@ -505,20 +533,32 @@ void autonomous(void) {
 
     aBase(0, reverse, 50, 0, 0, 0); //Back away from the wall
 
-    wait(1, sec);
+    wait(.75, sec);
 
-    aBase(1, fwd, 50, 0, 0, 0); //Turn towards the goal under the platform
+    bTLift.spin(fwd, 100, percent); //Lower the back tower lift
+    aBase(1, fwd, 200, 0, 1, 0);
+
+    wait(.35, sec);
+
+    aBase(0, fwd, 100, 0, 0, 0);
 
     wait(.6, sec);
 
-    aBase(0, reverse, 100, 0, 0, 0); //Drive to under the platform
-    bTLift.spin(fwd, 100, percent); //Lower the back tower lift
-
-    wait(.5, sec);
-
     bTLift.stop();
 
-    wait(.75, sec);
+    wait(1, sec);
+
+    aBase(0, reverse, 50, 0, 0, 0);
+
+    wait(1, sec);
+
+    aBase(1, fwd, 200, 0, 0, 0);
+
+    wait(.4, sec);
+
+    aBase(0, reverse, 100, 0, 0, 0); //Drive to under the platform
+
+    wait(.7, sec);
 
     bTLift.spin(reverse, 100, percent); //Grab the tower
     lift.spin(fwd, 100, percent); //Lower the main lift
@@ -528,15 +568,11 @@ void autonomous(void) {
 
     aBase(0, fwd, 100, 0, 0, 0); //Pull out from under the platform
 
-    wait(.75, sec);
+    wait(.45, sec);
 
-    aBase(1, fwd, 100, 0, 0, 0); //Turn towards the left neutral tower
+    aBase(1, fwd, 50, 0, 0, 0); //Turn towards the left neutral tower
 
-    wait(.025, sec);
-
-    lift.stop();
-
-    wait(.25, sec);
+    wait(1, sec);
 
     aBase(0, fwd, 200, 0, 0, 0); //Drive towards the tower
 
@@ -544,7 +580,11 @@ void autonomous(void) {
 
     bTLift.stop();
 
-    wait(.25, sec);
+    wait(.3, sec);
+
+    lift.stop();
+
+    wait(.15, sec);
 
     aBase(0, fwd, 100, 0, 0, 0); //Slow down to not knock over the tower
 
@@ -563,13 +603,14 @@ void autonomous(void) {
 
     lift.stop();
 
-    wait(1, sec);
-
     aBase(1, fwd, 75, 0, 1, 0); //Turn towards the platform for a better angle
 
     wait(.5, sec);
 
-    aBaseStop();
+    aBase(0, fwd, 100, 0, 0, 0);
+
+    wait(.75, sec);
+
     lift.spin(fwd, 100, percent);
 
     wait(1, sec);
@@ -581,9 +622,14 @@ void autonomous(void) {
     mTLift.stop();
     lift.spin(reverse, 200, rpm); //Lift up over the lip of the platform
 
-    wait(.5, sec);
+    wait(1, sec);
 
     lift.stop();
+    aBase(0, reverse, 100, 0, 0, 0);
+
+    wait(.5, sec);
+
+    aBaseStop();
   }
 }
 
@@ -640,16 +686,55 @@ void usercontrol(void) {
     liPos = lift.position(degrees);
 
     /*---Used to rotate the Main Tower Lift---*/
-    if(Controller1.ButtonR2.pressing()){
+    /*if(Controller1.ButtonR2.pressing()){
       mTLift.spin(fwd, 100, percent);
     }else if(Controller1.ButtonR1.pressing()){
       mTLift.spin(reverse, 100, percent);
     }else{
       mTLift.stop();
+    }*/
+
+    /*---Used to toggle the Conveyor---*/
+    if(Controller1.ButtonDown.pressing()){
+      if(buttonDownPressing == 0){
+        if(convSpin == 1){
+          conveyor.stop();
+          convSpin = 0;
+        }else{
+          conveyor.spin(fwd, 100, percent);
+          convSpin = 1;
+        }
+        buttonDownPressing = 1;
+      }
+    }else{
+      buttonDownPressing = 0;
     }
+    convChange = conveyor.position(degrees) - convLast;
+    if(convSpin == 1){
+      matchClock += 1;
+      if(matchClock >= 2 && convChange <= 50 && unclogFunc == 0){
+        unclogFunc = 1;
+        matchClock = 0;
+      }
+    }
+    if(unclogFunc == 1){
+      if(matchClock <= 1){
+        conveyor.spin(reverse, 100, percent);
+      }else{
+        unclogFunc = 0;
+        matchClock = 0;
+        conveyor.spin(fwd, 100, percent);
+      }
+    }
+    convLast = conveyor.position(degrees);
+    Controller1.Screen.clearLine(3);
+    Controller1.Screen.setCursor(3, 0);
+    Controller1.Screen.print(convChange);
+    Controller1.Screen.setCursor(3, 12);
+    Controller1.Screen.print(bTLift.position(degrees));
 
     /*---Used to control the Front Pnuematic Claw---*/
-    /*if(Controller1.ButtonR1.pressing() || Controller1.ButtonR2.pressing()){
+    if(Controller1.ButtonR1.pressing() || Controller1.ButtonR2.pressing()){
       if(buttonRPressing == 0){
         if(pneumaticFront == 0){
           pF.set(1);
@@ -662,7 +747,7 @@ void usercontrol(void) {
       }
     }else{
       buttonRPressing = 0;
-    }*/
+    }
 
     /*---Used to rotate the Back Tower Lift---*/
     if(Controller1.ButtonA.pressing()){
@@ -677,9 +762,9 @@ void usercontrol(void) {
     }else{
       buttonAPressing = 0;
     }
-    if(upOrDown == 0 && bTLift.position(degrees) < 1350){
+    if(upOrDown == 0 && bTLift.position(degrees) < -600){
       bTLift.spin(fwd, 100, percent);
-    }else if(upOrDown == 1 && bTLift.position(degrees) > 0){
+    }else if(upOrDown == 1 && bTLift.position(degrees) > -2500){
       bTLift.spin(reverse, 100, percent);
     }else{
       bTLift.stop();
