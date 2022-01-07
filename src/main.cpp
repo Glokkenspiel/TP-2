@@ -686,13 +686,13 @@ void usercontrol(void) {
     liPos = lift.position(degrees);
 
     /*---Used to rotate the Main Tower Lift---*/
-    /*if(Controller1.ButtonR2.pressing()){
+    if(Controller1.ButtonR2.pressing()){
       mTLift.spin(fwd, 100, percent);
     }else if(Controller1.ButtonR1.pressing()){
       mTLift.spin(reverse, 100, percent);
     }else{
       mTLift.stop();
-    }*/
+    }
 
     /*---Used to toggle the Conveyor---*/
     if(Controller1.ButtonDown.pressing()){
@@ -700,6 +700,7 @@ void usercontrol(void) {
         if(convSpin == 1){
           conveyor.stop();
           convSpin = 0;
+          matchClock = 0;
         }else{
           conveyor.spin(fwd, 100, percent);
           convSpin = 1;
@@ -727,30 +728,25 @@ void usercontrol(void) {
       }
     }
     convLast = conveyor.position(degrees);
-    Controller1.Screen.clearLine(3);
-    Controller1.Screen.setCursor(3, 0);
-    Controller1.Screen.print(convChange);
-    Controller1.Screen.setCursor(3, 12);
-    Controller1.Screen.print(bTLift.position(degrees));
 
-    /*---Used to control the Front Pnuematic Claw---*/
-    if(Controller1.ButtonR1.pressing() || Controller1.ButtonR2.pressing()){
-      if(buttonRPressing == 0){
-        if(pneumaticFront == 0){
-          pF.set(1);
-          pneumaticFront = 1;
+    /*---Used to control the Back Pnuematic Claw---*/
+    if(Controller1.ButtonA.pressing()){
+      if(buttonAPressing == 0){
+        if(pneumaticBack == 0){
+          pB.set(1);
+          pneumaticBack = 1;
         }else{
-          pF.set(0);
-          pneumaticFront = 0;
+          pB.set(0);
+          pneumaticBack = 0;
         }
-        buttonRPressing = 1;
+        buttonAPressing = 1;
       }
     }else{
-      buttonRPressing = 0;
+      buttonAPressing = 0;
     }
 
     /*---Used to rotate the Back Tower Lift---*/
-    if(Controller1.ButtonA.pressing()){
+    /*if(Controller1.ButtonA.pressing()){
       if(buttonAPressing == 0){
         if(upOrDown == 0){
           upOrDown = 1;
@@ -768,18 +764,16 @@ void usercontrol(void) {
       bTLift.spin(reverse, 100, percent);
     }else{
       bTLift.stop();
-    }
+    }*/
 
     /*---Puts the battery percent onto the controller---*/
     Controller1.Screen.setCursor(2, 1);
     Controller1.Screen.clearLine(2);
     Controller1.Screen.print("Battery Percent: ");
     Controller1.Screen.print(Brain.Battery.capacity());
-    /*Controller1.Screen.setCursor(3, 1);
+    Controller1.Screen.setCursor(3, 1);
     Controller1.Screen.clearLine(3);
-    Controller1.Screen.print("mTLift Position: ");
-    Controller1.Screen.print(bTLift.position(degrees));
-    Controller1.Screen.print(" Degrees");*/
+    Controller1.Screen.print(matchClock);
 
     wait(20, msec);
   }
