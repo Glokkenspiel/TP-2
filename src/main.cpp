@@ -12,13 +12,13 @@
 // [Name]               [Type]        [Port(s)]
 // Controller1          controller                    
 // lift                 motor_group   5, 9            
-// lB                   motor_group   1, 2            
+// lB                   motor_group   1, 10           
 // rB                   motor_group   3, 4            
-// mTLift               motor         11              
+// mTLift               motor         12              
 // pF                   digital_out   D               
 // pB                   digital_out   B               
 // pP                   digital_out   C               
-// GPS                  gps           10              
+// GPS                  gps           6               
 // bTLift               motor         20              
 // bTLSwitch            limit         A               
 // conveyor             motor         13              
@@ -45,8 +45,8 @@ bool aMode = 0;
 bool lORr = 0;
 bool bTLDown = 0;
 bool bTLMax = 0;
-bool convSpin = 0;
 bool unclogFunc = 0;
+bool buttonUpPressing = 0;
 
 int uni = 0; //Universal variable
 int n = 0;
@@ -56,6 +56,7 @@ int y = 30;
 int auton = 0;
 int xORyReach = 0;
 int matchClock = 0;
+int convSpin = 0;
 
 float liPos = 0;
 float mTPos = 0;
@@ -223,16 +224,15 @@ void aBaseStop(){
 }
 
 /*---Activates the tower lift with one command---*/
-void aPF(){
-  if(pneumaticFront == 0){
-    pF.set(1);
-    pneumaticFront = 1;
+void aPB(){
+  if(pneumaticBack == 0){
+    pB.set(1);
+    pneumaticBack = 1;
   }else{
-    pF.set(0);
-    pneumaticFront = 0;
+    pB.set(0);
+    pneumaticBack = 0;
   }
 }
-
 
 /*---Activate the Main Tower Lift---*/
 void aML(){
@@ -319,7 +319,7 @@ void autonomous(void) {
 
     aBase(1, fwd, 180, 0, 1, 0); //Turn towards the right neutral tower
 
-    wait(.175, sec);
+    wait(.2, sec);
 
     aBase(0, fwd, 150, 0, 0, 0); //Drive towards the tower
 
@@ -688,7 +688,7 @@ void usercontrol(void) {
     /*---Used to rotate the Main Tower Lift---*/
     if(Controller1.ButtonR2.pressing()){
       mTLift.spin(fwd, 100, percent);
-    }else if(Controller1.ButtonR1.pressing()){
+    }else if(Controller1.ButtonR1.pressing() && mTLift.position(degrees) > 0){
       mTLift.spin(reverse, 100, percent);
     }else{
       mTLift.stop();
@@ -707,8 +707,21 @@ void usercontrol(void) {
         }
         buttonDownPressing = 1;
       }
+    }else if(Controller1.ButtonUp.pressing()){
+      if(buttonUpPressing == 0){
+        if(convSpin == 2){
+          conveyor.stop();
+          convSpin = 0;
+          matchClock = 0;
+        }else{
+          conveyor.spin(reverse, 100, percent);
+          convSpin = 2;
+          matchClock = 0;
+        }
+        buttonUpPressing = 1;
+      }
     }else{
-      buttonDownPressing = 0;
+      buttonUpPressing = 0;
     }
     convChange = conveyor.position(degrees) - convLast;
     if(convSpin == 1){
