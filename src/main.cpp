@@ -11,7 +11,7 @@
 // Robot Configuration:
 // [Name]               [Type]        [Port(s)]
 // Controller1          controller                    
-// lift                 motor_group   5, 17           
+// lift                 motor_group   11, 17          
 // lB                   motor_group   2, 9            
 // rB                   motor_group   3, 4            
 // mTLift               motor         12              
@@ -25,6 +25,7 @@
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
+#include <cmath>
 
 using namespace vex;
 
@@ -54,8 +55,9 @@ bool relY = 0;
 bool dtpOnce = 0;
 bool dtpS0Fin = 0;
 bool dtpS2Fin = 0;
+bool ttA = 0;
+bool ttAFin = 0;
 
-int uni = 0; //Universal variable
 int n = 0;
 int a = 2;
 int x = 10;
@@ -285,39 +287,45 @@ void aML(){
 
 
 /*---Drive to a certain point and position and face a certain direction---*/
-void driveToPoint(float xTgt, float yTgt, float endA){
-
-  while(!(xTgt - 5 < GPS.xPosition(mm) && GPS.xPosition(mm) < xTgt + 5 && yTgt - 5 < GPS.yPosition(mm) && GPS.yPosition(mm) < yTgt +5)){
-    
+void driveToPoint(float xTgt, float yTgt, float endA, int amnt){
+  for(int d = 0; d < amnt; d++){
+  GPS.calibrate();
+  dtpOnce = 0;
+  dtpStage = 0;
+  dtpS0Fin = 0;
+  dtpS2Fin = 0;
+  while(dtpStage != 3){
     Controller1.Screen.setCursor(1, 1);
     Controller1.Screen.clearScreen();
     Controller1.Screen.print(GPS.xPosition(mm));
-    Controller1.Screen.setCursor(1, 20);
-    Controller1.Screen.print(dtpStage);
     Controller1.Screen.setCursor(2, 1);
     Controller1.Screen.print(GPS.yPosition(mm));
     Controller1.Screen.setCursor(3, 1);
     Controller1.Screen.print(GPS.heading());
-    Controller1.Screen.setCursor(3, 10);
-    Controller1.Screen.print(GPS.heading() - endA);
+    Controller1.Screen.setCursor(3, 17);
+    Controller1.Screen.print(lORr);
     Controller1.Screen.setCursor(3, 20);
-    Controller1.Screen.print(upperVariance);
+    Controller1.Screen.print(dtpStage);
+    Controller1.Screen.setCursor(3, 10);
+    Controller1.Screen.print(tgtA);
     if(dtpStage == 0){
     /*---The Turn---*/
     if(dtpOnce == 0){
       pheta = atan((GPS.yPosition(mm)-yTgt)/(GPS.xPosition(mm)-xTgt))*180/M_PI;
-      pheta = GPS.heading() - pheta;
       dtpOnce = 1;
     }
-    if(pheta < 0){
-      tgtA = 360 + pheta;
+    if(((GPS.xPosition(mm) - xTgt) < 0 || (GPS.xPosition(mm) < 0 && xTgt > 0)) && !(GPS.xPosition(mm) > 0 && xTgt < 0)){
+      if(pheta < 0){
+        tgtA = std::abs(pheta) + 90;
+      }else{
+        tgtA = 90 - pheta;
+      }
     }else{
-      tgtA = pheta;
-    }
-    if(180 <= tgtA && tgtA <= 360){
-      lORr = 1;
-    }else{
-      lORr = 0;
+      if(pheta < 0){
+        tgtA = std::abs(pheta) + 270;
+      }else{
+        tgtA = 270 - pheta;
+      }
     }
     if((tgtA + 2) > 360){
       upperVariance = tgtA - 358;
@@ -329,95 +337,99 @@ void driveToPoint(float xTgt, float yTgt, float endA){
     }else{
       lowerVariance = tgtA - 2;
     }
-    if(lORr == 1){
+    if(GPS.heading() > upperVariance){
       while(GPS.heading() > upperVariance){
         aBase(1, fwd, 25, 0, 1, 0);
-        dtpS0Fin = 1;
       }
-      aBaseStop();
-      if(dtpS0Fin == 1){
-        dtpStage = 1;
-      }
-    }else{
+    }else if(GPS.heading() < lowerVariance){
       while(GPS.heading() < lowerVariance){
         aBase(1, fwd, 25, 0, 0, 0);
-        dtpS0Fin = 1;
       }
+    }
+    if(GPS.heading() > lowerVariance && GPS.heading() < upperVariance){
       aBaseStop();
-      if(dtpS0Fin == 1){
-        dtpStage = 1;
-      }
+      dtpStage = 1;
+      dtpOnce = 0;
+    }else{
+      aBaseStop();
+      dtpOnce = 0;
     }
     }else if(dtpStage == 1){
 
     /*---The Drive---*/
     aBase(0, fwd, 200, 0, 0, 0);
-    startX = GPS.xPosition(mm);
-    startY = GPS.yPosition(mm);
+    if(dtpOnce == 0){
+      startX = GPS.xPosition(mm);
+      startY = GPS.yPosition(mm);
+      dtpOnce = 1;
+    }
     if(xTgt <= startX){
       if(yTgt <= startY){
-        while(((startX - xTgt) * 1/3) < GPS.xPosition(mm) && ((startY - yTgt) * 1/3) < GPS.yPosition(mm)){
+        while((((startX - xTgt) * 1/2) + xTgt) < GPS.xPosition(mm) && (((startY - yTgt) * 1/2) + yTgt) < GPS.yPosition(mm)){
           wait(1, msec);
         }
         aBase(0, fwd, 100, 0, 0, 0);
-        while(((startX - xTgt) * 1/6) < GPS.xPosition(mm) && ((startY - yTgt) * 1/6) < GPS.yPosition(mm)){
+        while((((startX - xTgt) * 1/6) + xTgt) < GPS.xPosition(mm) && (((startY - yTgt) * 1/6) + yTgt) < GPS.yPosition(mm)){
           wait(1, msec);
         }
         aBase(0, fwd, 50, 0, 0, 0);
-        while((xTgt +- 5) < GPS.xPosition(mm) && (yTgt +- 5) < GPS.yPosition(mm)){
+        while(((xTgt + 5) < GPS.xPosition(mm) || (xTgt - 5) < GPS.xPosition(mm)) && ((yTgt + 5) < GPS.yPosition(mm) || (yTgt - 5) < GPS.yPosition(mm))){
           wait(1, msec);
         }
       }else{
-        while(((startX - xTgt) * 1/3) < GPS.xPosition(mm) && ((startY - yTgt) * 1/3) > GPS.yPosition(mm)){
+        while((((startX - xTgt) * 1/2) + xTgt) < GPS.xPosition(mm) && (((yTgt - startY) * 1/2) + startY) > GPS.yPosition(mm)){
           wait(1, msec);
         }
         aBase(0, fwd, 100, 0, 0, 0);
-        while(((startX - xTgt) * 1/6) < GPS.xPosition(mm) && ((startY - yTgt) * 1/6) > GPS.yPosition(mm)){
+        while((((startX - xTgt) * 1/6) + xTgt) < GPS.xPosition(mm) && (((yTgt - startY) * 1/6) + startY) > GPS.yPosition(mm)){
           wait(1, msec);
         }
         aBase(0, fwd, 50, 0, 0, 0);
-        while((xTgt +- 5) < GPS.xPosition(mm) && (yTgt +- 5) > GPS.yPosition(mm)){
+        while(((xTgt + 5) < GPS.xPosition(mm) || (xTgt - 5) < GPS.xPosition(mm)) && ((yTgt + 5) > GPS.yPosition(mm) || (yTgt - 5) > GPS.yPosition(mm))){
           wait(1, msec);
         }
       }
     }else{
       if(yTgt <= startY){
-        while(((startX - xTgt) * 1/3) > GPS.xPosition(mm) && ((startY - yTgt) * 1/3) < GPS.yPosition(mm)){
+        while((((xTgt - startX) * 1/2) + startX) > GPS.xPosition(mm) && (((startY - yTgt) * 1/2) + yTgt) < GPS.yPosition(mm)){
           wait(1, msec);
         }
         aBase(0, fwd, 100, 0, 0, 0);
-        while(((startX - xTgt) * 1/6) > GPS.xPosition(mm) && ((startY - yTgt) * 1/6) < GPS.yPosition(mm)){
+        while((((xTgt - startX) * 1/6) + startX) > GPS.xPosition(mm) && (((startY - yTgt) * 1/6) + yTgt) < GPS.yPosition(mm)){
           wait(1, msec);
         }
         aBase(0, fwd, 50, 0, 0, 0);
-        while((xTgt +- 5) > GPS.xPosition(mm) && (yTgt +- 5) < GPS.yPosition(mm)){
+        while(((xTgt + 5) > GPS.xPosition(mm) || (xTgt - 5) > GPS.xPosition(mm)) && ((yTgt + 5) < GPS.yPosition(mm) || (yTgt - 5) < GPS.yPosition(mm))){
           wait(1, msec);
         }
       }else{
-        while(((startX - xTgt) * 1/3) > GPS.xPosition(mm) && ((startY - yTgt) * 1/3) > GPS.yPosition(mm)){
+        while((((xTgt - startX) * 1/2) + startX) > GPS.xPosition(mm) && (((yTgt - startY) * 1/2) + startY) > GPS.yPosition(mm)){
           wait(1, msec);
         }
         aBase(0, fwd, 100, 0, 0, 0);
-        while(((startX - xTgt) * 1/6) > GPS.xPosition(mm) && ((startY - yTgt) * 1/6) > GPS.yPosition(mm)){
+        while((((xTgt - startX) * 1/6) + startX) > GPS.xPosition(mm) && (((yTgt - startY) * 1/6) + startY) > GPS.yPosition(mm)){
           wait(1, msec);
         }
         aBase(0, fwd, 50, 0, 0, 0);
-        while((xTgt +- 5) > GPS.xPosition(mm) && (yTgt +- 5) > GPS.yPosition(mm)){
+        while(((xTgt + 5) > GPS.xPosition(mm) || (xTgt - 5) > GPS.xPosition(mm)) && ((yTgt + 5) > GPS.yPosition(mm) || (yTgt - 5) > GPS.yPosition(mm))){
           wait(1, msec);
         }
       }
     }
     aBaseStop();
-    dtpStage = 2;
+    //if((((xTgt - 5) < GPS.xPosition(mm) && (xTgt + 5) > GPS.xPosition(mm)) || ((xTgt - 5) > GPS.xPosition(mm) && (xTgt + 5) < GPS.xPosition(mm))) && (((yTgt - 5) < GPS.yPosition(mm) && (yTgt + 5) > GPS.yPosition(mm)) || ((yTgt - 5) > GPS.yPosition(mm) && (yTgt + 5) < GPS.yPosition(mm)))){
+      dtpStage = 2;
+    /*}else{
+      dtpStage = 0;
+    }*/
     dtpOnce = 0;
     }else if(dtpStage == 2){
   
-
   /*---The Final Turn---*/
-  if(180 <= GPS.heading() - endA && GPS.heading() - endA <= 360){
-      lORr = 1;
-    }else{
+  if(180 <= std::abs(GPS.heading() - endA) && std::abs(GPS.heading() - endA) <= 360){
       lORr = 0;
+    }else{
+      lORr = 1;
     }
     if((endA + 2) > 360){
       upperVariance = endA - 358;
@@ -429,33 +441,98 @@ void driveToPoint(float xTgt, float yTgt, float endA){
     }else{
       lowerVariance = endA - 2;
     }
-    if(lORr == 0){
-      while(GPS.heading() > upperVariance){
-        aBase(1, fwd, 25, 0, 1, 0);
-        dtpS2Fin = 1;
+    if(lORr == 1){
+      if(GPS.heading() > upperVariance){
+        while(GPS.heading() > upperVariance){
+          aBase(1, fwd, 25, 0, 1, 0);
+          //dtpS2Fin = 1;
+        }
+      }else{
+        aBase(1, fwd, 50, 0, 0, 0);
       }
-      aBaseStop();
-      if(dtpS2Fin == 1){
+      if(/*tpS2Fin == 1*/ GPS.heading() < lowerVariance){
+        aBaseStop();
         dtpStage = 3;
       }
     }else{
-      while(GPS.heading() < lowerVariance){
-        aBase(1, fwd, 25, 0, 0, 0);
-        dtpS2Fin = 1;
+      if(GPS.heading() < lowerVariance){
+        while(GPS.heading() < lowerVariance){
+          aBase(1, fwd, 25, 0, 0, 0);
+          //dtpS2Fin = 1;
+        }
+      }else{
+        aBase(1, fwd, 50, 0, 1, 0);
       }
-      aBaseStop();
-      if(dtpS2Fin == 1){
+      if(/*dtpS2Fin == 1*/ GPS.heading() > upperVariance){
+        aBaseStop();
         dtpStage = 3;
       }
     }
   dtpOnce = 0;
   }
   }
+  }
+}
+
+void turnToAngle(float endA){
+  ttA = 0;
+  ttAFin = 0;
+  while(ttA < 1){
+    Controller1.Screen.clearScreen();
+    Controller1.Screen.setCursor(3, 1);
+    Controller1.Screen.print(GPS.heading());
+    Controller1.Screen.setCursor(3, 17);
+    Controller1.Screen.print(lORr);
+    Controller1.Screen.setCursor(3, 20);
+    Controller1.Screen.print(ttAFin);
+  
+    if(180 <= std::abs(GPS.heading() - endA) && std::abs(GPS.heading() - endA) <= 360){
+      lORr = 0;
+    }else{
+      lORr = 1;
+    }
+    if((endA + 2) > 360){
+      upperVariance = endA - 359.5;
+    }else{
+      upperVariance = endA + .5;
+    }
+    if((endA - 2) < 0){
+      lowerVariance = endA + 359.5;
+    }else{
+      lowerVariance = endA - .5;
+    }
+    if(lORr == 1){
+      if(GPS.heading() > upperVariance){
+        while(GPS.heading() > upperVariance){
+          aBase(1, fwd, 25, 0, 1, 0);
+        }
+      }else{
+        aBase(1, fwd, 25, 0, 0, 0);
+      }
+      if(GPS.heading() < lowerVariance){
+        aBaseStop();
+        ttA = 1;
+      }
+    }else{
+      if(GPS.heading() < lowerVariance){
+        while(GPS.heading() < lowerVariance){
+          aBase(1, fwd, 25, 0, 0, 0);
+        }
+      }else{
+        aBase(1, fwd, 25, 0, 1, 0);
+      }
+      if(GPS.heading() > upperVariance){
+        aBaseStop();
+        ttA = 1;
+      }
+    }
+  }
+  
 }
 
 void pre_auton(void) {
   vexcodeInit();
-  lift.setStopping(brake);
+  lift.setStopping(hold);
   mTLift.setStopping(hold);
   bTLift.setStopping(brake);
   autonSelect();
@@ -588,123 +665,66 @@ void autonomous(void) {
     /*---Skills---*/
   }else if(auton == 5){
     /*---GPS work for future---*/
-    GPS.calibrate();
-    GPS.setLocation(1600, 1600, mm, 270, degrees);
-    driveToPoint(-600, 800, 160);
-    /*while(1){
-      Controller1.Screen.setCursor(1, 1);
-      Controller1.Screen.clearScreen();
-    Controller1.Screen.print(GPS.xPosition(mm));
-    Controller1.Screen.setCursor(2, 1);
-    Controller1.Screen.print(GPS.yPosition(mm));
-    Controller1.Screen.setCursor(3, 1);
-    Controller1.Screen.print(GPS.heading());
-    }*/
-
-    /*---Current work---*/
-    /*pF.set(1);
-    pB.set(0);
-    aBase(0, reverse, 200, 0, 0, 0); //Begin Speeding towards the other side of the field
+    pF.set(1); //Turn off the ratchet for the front claw
+    pB.set(0); //Open the back tower lift
+    aBase(0, reverse, 100, 0, 0, 0); //Back up into the right side red allaince tower
 
     wait(1, sec);
 
-    conveyor.spin(fwd, 100, percent);
+    aBaseStop();
+    conveyor.spin(fwd, 100, percent); //Turn on the conveyor
+    pB.set(1); //Grab the tower
 
-    wait(1.5, sec);
+    wait(.1, sec);
 
-    aBaseStop(); //
-    lift.spin(reverse, 100, percent);
+    aBase(0, fwd, 100, 1, 0, 82); //Arc towards the right neutral tower
 
-    wait(.2, sec);
+    wait(2.75, sec);
 
-    aBase(1, fwd, 20, 0, 0, 0); //
+    aBase(0, fwd, 100, 0, 0, 0); //Drive towards the right neutral tower
+
+    wait(1.2, sec);
+
+    aBaseStop();
+    mTLift.spin(fwd, 100, percent); //Grab the right neutral tower
+    lift.spin(reverse, 100, percent); //Raise up the lift so it can get onto the platform
+
+    wait(1.75, sec);
+
+    lift.stop();
+    driveToPoint(900, -150, 100, 1); //Drive up next to and point towards the blue platform
+
+    aBase(0, fwd, 100, 0, 0, 0); //Get the tower overtop the platform
 
     wait(.5, sec);
 
-    aBase(1, fwd, 50, 0, 0, 0); //Turn towards the right neutral tower
-    lift.stop();
+    aBaseStop();
+    lift.spin(fwd, 100, percent); //Level the platform and prevent the tower from tipping when dropped
 
-    wait(.25, sec);
-
-    aBaseStop(); //Stop turning
-    
-    wait(.1, sec);
-
-    aBase(0, fwd, 200, 0, 0, 0); //Drive towards the tower
-
-    wait(.25, sec);
-
-    lift.spin(fwd, 100, percent);
-
-    wait(.75, sec);
-
-    aBase(0, fwd, 100, 0, 0, 0); //Slow down to prevent coasting and hitting the tower
-
-    wait(.1, sec);
-
-    lift.stop();
-    
     wait(1, sec);
 
-    aBaseStop(); //Stop in front of the tower
-    mTLift.spin(fwd, 100, percent); // Clamp onto the 
-    
-    lift.spin(reverse, 100, percent); //Raise the main lift to prepare to place the goal on the platform
-
-    wait(.3, sec);
-
-    aBaseStop();
-
-    wait(.75, sec);
-
-    aBase(1, fwd, 50, 0, 0, 0); //Turn towards the platform
-
-    wait(.25, sec);
-
-    aBase(0, fwd, 75, 0, 0, 0); //Drive up to the platform
-
-    wait(.7, sec);
-
-    lift.stop(); //Prevent the lift from attempting to go to high
-
-    wait(1, sec);*/
-
-    /*aBase(1, fwd, 50, 0, 1, 0); //Turn towards the platform for better angle
-
-    wait(.6, sec);
-
-    aBase(0, fwd, 100, 0, 0, 0); //Drive up to the platform
-
-    wait(.75, sec);*/
-
-    /*lift.spin(fwd, 200, rpm); //Lower the lift to level the platform
-
-    wait(.3, sec);
-
-    aBaseStop(); //Prevent ramming onto the platform and ruining the angle
-
-    wait(.35, sec);
-
+    lift.stop();
     mTLift.spin(reverse, 100, percent); //Drop the tower
 
     wait(.3, sec);
 
     mTLift.stop();
-    lift.spin(reverse, 200, rpm); //Lift up over the lip of the platform
+    lift.spin(reverse, 100, percent); //Lift over the lip of the platform
 
-    wait(.75, sec);
+    wait(.5, sec);
 
-    aBase(0, reverse, 75, 0, 0, 0); //Back away from the platform
+    aBase(0, reverse, 100, 0, 0, 0); //Back away from the platform
 
-    wait(.1, sec);
+    wait(.5, sec);
 
+    aBaseStop();
     lift.stop();
 
-    wait(.9, sec);
+    //aBase(1, fwd, 75, 0, 0, 0); //Turn towards the left wall
 
-    aBase(1, fwd, 75, 0, 0, 0); //Turn towards the left wall
+    //wait(.75, sec);
 
-    wait(.3, sec);
+    /*turnToAngle(180); //Turn towards the left wall
 
     aBase(0, fwd, 200, 0, 0, 0); //Drive and slam into the wall
 
@@ -714,131 +734,49 @@ void autonomous(void) {
 
     wait(.75, sec);
 
-    aBase(1, fwd, 50, 0, 1, 0);
+    //aBase(1, fwd, 50, 0, 1, 0);
 
-    wait(1.13, sec);
+    //wait(1.13, sec);
 
-    aBase(0, fwd, 200, 0, 0, 0);
+    turnToAngle(90); //Turn towards the back wall
+
+    aBase(0, fwd, 200, 0, 0, 0); //Slam into the wall to guarentee the position (pre GPS)
 
     wait(1.6, sec);
 
-    aBase(0, reverse, 50, 0, 0, 0);
+    aBase(0, reverse, 50, 0, 0, 0); //Back away from the wall
 
     wait(1.2, sec);
 
-    aBase(1, fwd, 25, 0, 1, 0);*/
+    aBase(1, fwd, 25, 0, 1, 0); //Turn towards the left neutral tower
 
-    /*wait(.5, sec);
-
-    lift.spin(fwd, 100, percent); //Lower the main lift
-    aBaseStop();
-
-    wait(.7, sec);
-
-    aBase(0, fwd, 100, 0, 0, 0); //Drive to under the platform
-
-    wait(.7, sec);
-
-    aBase(0, fwd, 50, 0, 0, 0);
-
-    wait(.2, sec);
-
-    lift.stop();
-    mTLift.spin(fwd, 100, percent);
-    direct = 1;
-
-    wait(.3, sec);
-
-    aBase(0, reverse, 100, 0, 0, 0); //Pull out from under the platform
-
-    wait(.45, sec);
-
-    aBase(1, fwd, 75, 0, 0, 0); //Turn towards the left neutral tower
-
-    wait(.8, sec);
-
-    aBase(0, reverse, 200, 0, 0, 0); //Drive towards the tower
-
-    wait(.8, sec);
-
-    aBase(0, reverse, 100, 0, 0, 0); //Slow down to not knock over the tower
-
-    wait(.3, sec);
-
-    lift.spin(reverse, 100, percent); //Raise the tower
-    aBase(1, fwd, 75, 0, 0, 0); //Turn towards the far platform
-
-    wait(.3, sec);
-
-    aBase(0, reverse, 150, 0, 0, 0); //Drive towards the platform
-
-    wait(1.75, sec);
-
-    lift.stop();
-
-    aBase(1, fwd, 75, 0, 1, 0); //Turn towards the platform for a better angle
-
-    wait(.5, sec);
-
-    aBase(0, fwd, 200, 1, 1, 175);
-
-    wait(1.5, sec);
-
-    aBase(0, fwd, 100, 0, 0, 0);
-
-    wait(1, sec);
-
-    aBaseStop();
-    lift.spin(fwd, 100, percent);
-
-    wait(.5, sec);
-
-    lift.stop();
-    mTLift.spin(reverse, 100, percent);
-
-    wait(.5, sec);
-
-    mTLift.stop();
-    lift.spin(reverse, 100, percent);
-
-    wait(.5, sec);
-
-    aBase(0, reverse, 50, 0, 0, 0);
-
-    wait(.5, sec);
-
-    aBase(1, fwd, 50, 0, 1, 0);
-    lift.spin(fwd, 100, percent);
-
-    wait(1.25, sec);
-
-    aBaseStop();
-
-    wait(.5, sec);
-
-    lift.stop();*/
-
-    /*---Kalahari Fix---*/
-
-    /*wait(3.95, sec);
+    wait(3.7, sec);
 
     lift.spin(fwd, 100, percent);
 
-    wait(.25, sec);
+    wait(.5, sec);
 
     aBase(0, fwd, 200, 0, 0, 0); //Drive to tower
 
     wait(1.5, sec);
 
+    lift.stop();*/
+
+    lift.spin(fwd, 100, percent); //Lower the lift
+
+    wait(1.5, sec);
+
     lift.stop();
-    aBase(0, fwd, 50, 0, 0, 0);
+    driveToPoint(600, -900, 270, 1); //Drive up to and point towards the left neutral tower
+
+    aBase(0, fwd, 50, 0, 0, 0); //Approach on the tower
 
     wait(1, sec);
 
-    mTLift.spin(fwd, 100, percent);
-    aBase(1, fwd, 50, 0, 0, 0);
+    mTLift.spin(fwd, 100, percent); //Grab the tower
+    /*aBase(1, fwd, 50, 0, 0, 0);
 
-    wait(.45, sec);
+    wait(.55, sec);
 
     aBaseStop();
     lift.spin(reverse, 100, percent);
@@ -848,31 +786,93 @@ void autonomous(void) {
     aBase(0, fwd, 200, 0, 0, 0);
     lift.stop();
 
-    wait(.8, sec);
+    wait(.9, sec);*/
 
-    aBase(0, fwd, 75, 0, 0, 0);
+    lift.spin(reverse, 100, percent); //Raise the lift
+
+    wait(1.5, sec);
+
+    lift.stop();
+    driveToPoint(-900, -100, 280, 1); //Drive up next to and point towards the red platform
+
+    aBase(0, fwd, 50, 0, 0, 0); //Approach on the platform
+
+    wait(.5, sec);
+
+    aBaseStop();
+    lift.spin(fwd, 100, percent); //Lower the lift to level the platform and prevent the tower from tipping
+
+    wait(.5, sec);
+
+    mTLift.spin(reverse, 100, percent); //Drop the tower
+    lift.spin(reverse, 100, percent); //Raise the lift
+
+    wait(.5, sec);
+
+    aBase(0, reverse, 100, 0, 0, 0); //Back away from the platform
+    lift.stop();
 
     wait(.6, sec);
 
     aBaseStop();
+    lift.spin(fwd, 100, percent); //Lower the lift
 
-    wait(.15, sec);
+    wait(1.5, sec);
 
-    lift.spin(fwd, 100, percent);
+    lift.stop();
+    turnToAngle(270); //Turn to a predictible angle
 
-    wait(1, sec);
+    pB.set(0); //Drop the red tower that's been getting hauled around
+    aBase(0, fwd, 100, 0, 0, 0); //Pull away from the tower
 
+    wait(.5, sec);
+
+    aBaseStop();
+    lift.stop();
+    turnToAngle(90); //Turn towards the dropped tower
+
+    aBase(0, fwd, 100, 0, 0, 0); //Drive up to the tower
+
+    wait(.75, sec);
+
+    mTLift.spin(fwd, 100, percent); //Grab the tower
+    aBaseStop();
+
+    wait(.3, sec);
+
+    lift.spin(reverse, 100, percent); //Raise the lift
+
+    wait(1.25, sec);
+
+    lift.stop();
+    turnToAngle(285); //Turn to the platform
+
+    aBase(0, fwd, 100, 0, 0, 0); //Drive up to the platform
+
+    wait(.75, sec);
+
+    aBaseStop();
+    lift.spin(fwd, 100, percent); //Lower the lift
+
+    wait(.5, sec);
+
+    lift.stop();
     mTLift.spin(reverse, 100, percent);
+
+    wait(.3, sec);
+
+    mTLift.stop();
+    aBase(0, reverse, 25, 0, 0, 0);
+
+    wait(.1, sec);
+
     lift.spin(reverse, 100, percent);
 
     wait(.5, sec);
 
-    aBase(0, reverse, 100, 0, 0, 0);
     lift.stop();
-
-    wait(.4, sec);
-
-    aBase(1, fwd, 50, 0, 1, 0);
+    aBaseStop();
+    /*aBase(1, fwd, 50, 0, 1, 0);
 
     wait(1.25, sec);
 
@@ -962,8 +962,8 @@ void usercontrol(void) {
     if(driveMode == 0){
 
       /*---'Arcade'---*/
-      lB.spin(fwd, 2*Controller1.Axis3.position(percent) + 2*Controller1.Axis1.position(percent), rpm);
-      rB.spin(fwd, 2*Controller1.Axis3.position(percent) - 2*Controller1.Axis1.position(percent), rpm);
+      lB.spin(fwd, 2*Controller1.Axis3.position(percent) + 1.5*Controller1.Axis1.position(percent), rpm);
+      rB.spin(fwd, 2*Controller1.Axis3.position(percent) - 1.5*Controller1.Axis1.position(percent), rpm);
     }else{
 
       /*---'Tank'---*/
@@ -1127,7 +1127,9 @@ void usercontrol(void) {
     Controller1.Screen.print(Brain.Battery.capacity());
     Controller1.Screen.setCursor(3, 1);
     Controller1.Screen.clearLine(3);
-    Controller1.Screen.print(matchClock);
+    Controller1.Screen.print(GPS.xPosition(mm));
+    Controller1.Screen.setCursor(3, 10);
+    Controller1.Screen.print(GPS.yPosition(mm));
 
     wait(20, msec);
   }
